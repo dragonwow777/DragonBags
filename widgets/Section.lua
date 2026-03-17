@@ -1,5 +1,5 @@
 --[[
-LanceBags - Adirelle's bag addon.
+DragonBags - Adirelle's bag addon.
 Copyright 2010-2011 Adirelle (adirelle@tagada-team.net)
 All rights reserved.
 --]]
@@ -88,7 +88,7 @@ function sectionProto:OnCreate()
 	header:GetHighlightTexture():SetTexCoord(4/128, 76/128, 4/32, 18/32)	
 	header:GetFontString():SetAllPoints()	
 	self.Header = header
-	self:SendMessage('LanceBags_SectionCreated', self)
+	self:SendMessage('DragonBags_SectionCreated', self)
 
 	self:SetScript('OnShow', self.OnShow)
 	self:SetScript('OnHide', self.OnHide)
@@ -131,8 +131,8 @@ function sectionProto:OnAcquire(container, name, category)
 	self.total = 0
 	self.dirtyLevel = 0
 	self.container = container
-	self:RegisterMessage('LanceBags_OrderChanged')
-	-- self:RegisterMessage('LanceBags_ConfigChanged')
+	self:RegisterMessage('DragonBags_OrderChanged')
+	-- self:RegisterMessage('DragonBags_ConfigChanged')
 	-- self:UpdateFont()
 	self:UpdateHeaderScripts()
 end
@@ -156,13 +156,13 @@ function sectionProto:OnRelease()
 	self.container = nil
 end
 
--- function sectionProto:LanceBags_ConfigChanged(_, name)
+-- function sectionProto:DragonBags_ConfigChanged(_, name)
 -- 	if name == 'skin.font' or name == 'skin.fontSize' then
 -- 		return self:UpdateFont()
 -- 	end
 -- end
 
-function sectionProto:LanceBags_OrderChanged()
+function sectionProto:DragonBags_OrderChanged()
 	self:ReorderButtons()
 end
 
@@ -187,7 +187,7 @@ function sectionProto:SetCollapsed(collapsed)
 		else
 			self:Show()
 		end
-		self:SendMessage('LanceBags_LayoutChanged')
+		self:SendMessage('DragonBags_LayoutChanged')
 	end
 end
 
@@ -541,8 +541,8 @@ function addon:SetSortingOrder(order)
 		self:Debug('SetSortingOrder', order, func)
 		currentSortingFunc = func
 		wipe(itemCompareCache)
-		self:SendMessage('LanceBags_OrderChanged')
-		self:SendMessage('LanceBags_LayoutChanged')
+		self:SendMessage('DragonBags_OrderChanged')
+		self:SendMessage('DragonBags_LayoutChanged')
 	end
 end
 

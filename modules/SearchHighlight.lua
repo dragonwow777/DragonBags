@@ -1,5 +1,5 @@
 --[[
-LanceBags - Adirelle's bag addon.
+DragonBags - Adirelle's bag addon.
 Copyright 2010-2011 Adirelle (adirelle@tagada-team.net)
 All rights reserved.
 --]]
@@ -20,24 +20,61 @@ local GetItemInfo = _G.GetItemInfo
 
 local mod = addon:NewModule('SearchHighlight', 'AceEvent-3.0')
 mod.uiName = L['Item search']
-mod.uiDesc = L['Provides a text widget at top of the backpack where you can type (part of) an item name to locate it in your bags.']
+mod.uiDesc = L['Provides a text widget at bottom of the backpack where you can type (part of) an item name to locate it in your bags.']
+
+local ROW_WIDTH_SHRINK_THRESHOLD_NARROW = 6 -- Shrinks to 60px if rowWidth is 6 or less
+local ROW_WIDTH_SHRINK_THRESHOLD_MEDIUM = 8 -- Shrinks to 80px if rowWidth is 8 or less
+
+local MINIMAL_SEARCH_WIDTH = 60
+local MEDIUM_SEARCH_WIDTH = 80
+local NORMAL_SEARCH_WIDTH = 100
+
+
+function mod:UpdateSearchLayout()
+    if not self.widget then return end
+    
+    -- Read the current "buttons per row" setting for the Backpack (or default to 9)
+    local currentWidthSetting = addon.db.profile.rowWidth.Backpack or 9
+    
+    local newWidth = NORMAL_SEARCH_WIDTH
+    
+    if currentWidthSetting <= ROW_WIDTH_SHRINK_THRESHOLD_NARROW then
+        -- Narrowest Mode (6 columns or less)
+        newWidth = MINIMAL_SEARCH_WIDTH
+    elseif currentWidthSetting <= ROW_WIDTH_SHRINK_THRESHOLD_MEDIUM then
+        -- Medium Mode (7 columns)
+        newWidth = MEDIUM_SEARCH_WIDTH
+    else
+        -- Wide Mode (8 columns or more)
+        newWidth = NORMAL_SEARCH_WIDTH
+    end
+
+    self.widget:SetWidth(newWidth)
+        
+end
 
 function mod:OnEnable()
 	addon:HookBagFrameCreation(self, 'OnBagFrameCreated')
 	if self.widget then
 		self.widget:Show()
-		self:SendMessage('LanceBags_UpdateAllButtons')
+		self:SendMessage('DragonBags_UpdateAllButtons')
 	end
-	self:RegisterMessage('LanceBags_UpdateButton', 'UpdateButton')
-	self:RegisterMessage('LanceBags_UpdateLock', 'UpdateButton')
-	self:RegisterMessage('LanceBags_UpdateBorder', 'UpdateButton')
+	self:RegisterMessage('DragonBags_UpdateButton', 'UpdateButton')
+	self:RegisterMessage('DragonBags_UpdateLock', 'UpdateButton')
+	self:RegisterMessage('DragonBags_UpdateBorder', 'UpdateButton')
+	
+    -- New: Register for layout updates
+    self:RegisterMessage('DragonBags_LayoutChanged', 'UpdateSearchLayout') 
+    self:UpdateSearchLayout() -- Set initial state on enable
 end
 
 function mod:OnDisable()
 	if self.widget then
 		self.widget:Hide()
-		self:SendMessage('LanceBags_UpdateAllButtons')
+		self:SendMessage('DragonBags_UpdateAllButtons')
 	end
+	-- New: Unregister the layout message
+    self:UnregisterMessage('DragonBags_LayoutChanged')
 end
 
 local function SearchEditBox_OnTextChanged(editBox)
@@ -47,7 +84,7 @@ local function SearchEditBox_OnTextChanged(editBox)
 	else
 		editBox.clearButton:Show()
 	end
-	mod:SendMessage('LanceBags_UpdateAllButtons')
+	mod:SendMessage('DragonBags_UpdateAllButtons')
 end
 
 local function SearchEditBox_OnEnterPressed(editBox)
@@ -64,9 +101,9 @@ end
 function mod:OnBagFrameCreated(bag)
 	if bag.bagName ~= "Backpack" then return end
 	local frame = bag:GetFrame()
-
 	local searchEditBox = CreateFrame("EditBox", addonName.."SearchFrame", frame, "InputBoxTemplate")
-	searchEditBox:SetSize(100, 18)
+	self.widget = searchEditBox
+	searchEditBox:SetSize(NORMAL_SEARCH_WIDTH, 18)
 	searchEditBox:SetAutoFocus(false)
 	searchEditBox:SetPoint("TOPLEFT")
 	searchEditBox:SetPoint("TOPRIGHT")
@@ -74,8 +111,9 @@ function mod:OnBagFrameCreated(bag)
 	searchEditBox:SetScript("OnEnterPressed", SearchEditBox_OnEnterPressed)
 	searchEditBox:SetScript("OnEscapePressed", SearchEditBox_OnEscapePressed)
 	searchEditBox:SetScript("OnTextChanged", SearchEditBox_OnTextChanged)
-	self.widget = searchEditBox
-
+	
+	self:UpdateSearchLayout() -- Sets the initial width based on settings
+	
 	local searchIcon = searchEditBox:CreateTexture(nil, "OVERLAY")
 	searchIcon:SetPoint("LEFT", 0, -2)
 	searchIcon:SetSize(14, 14)
@@ -83,7 +121,7 @@ function mod:OnBagFrameCreated(bag)
 	searchIcon:SetVertexColor(0.6, 0.6, 0.6)
 
 	local searchClearButton = CreateFrame("Button", nil, searchEditBox, "UIPanelButtonTemplate")
-	searchClearButton:SetPoint("RIGHT")
+	searchClearButton:SetPoint("RIGHT",searchEditBox,"RIGHT",-2,0)
 	searchClearButton:SetSize(20, 20)
 	searchClearButton:SetText("X")
 	searchClearButton:Hide()
@@ -112,5 +150,3 @@ function mod:UpdateButton(event, button)
 		button.Stock:Hide()
 	end
 end
-
-

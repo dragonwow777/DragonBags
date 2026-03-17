@@ -32,7 +32,7 @@ end
 
 function mod:OnEnable()
     -- This message listener now updates every button in our list
-    self:RegisterMessage("LanceBags_ViewModeChanged", function()
+    self:RegisterMessage("DragonBags_ViewModeChanged", function()
         for _, data in ipairs(createdButtons) do
             UpdateToggleButton(data.button, data.frame)
         end

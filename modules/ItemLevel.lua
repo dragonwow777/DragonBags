@@ -1,22 +1,22 @@
 --[[
-LanceBags - Adirelle's bag addon.
+DragonBags - Adirelle's bag addon.
 Copyright 2013-2014 Adirelle (adirelle@gmail.com)
 All rights reserved.
 
-This file is part of LanceBags.
+This file is part of DragonBags.
 
-LanceBags is free software: you can redistribute it and/or modify
+DragonBags is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-LanceBags is distributed in the hope that it will be useful,
+DragonBags is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with LanceBags.  If not, see <http://www.gnu.org/licenses/>.
+along with DragonBags.  If not, see <http://www.gnu.org/licenses/>.
 --]]
 
 local addonName, addon = ...
@@ -99,8 +99,8 @@ if SyLevel then
 	'Adibags',
 	function() self.db.profile.useSyLevel = true end,
 	function() self.db.profile.useSyLevel = false end,
-	function() self:SendMessage('LanceBags_UpdateAllButtons') end,
-	'LanceBags'
+	function() self:SendMessage('DragonBags_UpdateAllButtons') end,
+	'DragonBags'
 )
 SyLevel:RegisterFilterOnPipe('Adibags', 'Item level text')
 SyLevelDB.EnabledFilters['Item level text']['Adibags'] = true
@@ -118,11 +118,11 @@ local function UpdateTextLocation()
 end
 
 function mod:OnEnable()
-	self:RegisterMessage('LanceBags_UpdateButton', 'UpdateButton')
+	self:RegisterMessage('DragonBags_UpdateButton', 'UpdateButton')
 	if SyLevel and self.db.profile.useSyLevel and not SyLevel:IsPipeEnabled('Adibags') then
 		SyLevel:EnablePipe('Adibags')
 	end
-	self:SendMessage('LanceBags_UpdateAllButtons')
+	self:SendMessage('DragonBags_UpdateAllButtons')
 	self.font:ApplySettings()
 	UpdateFont()
 	UpdateTextLocation()

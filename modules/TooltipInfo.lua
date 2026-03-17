@@ -114,11 +114,28 @@ local function AddCharacterCounts(tooltip)
 	local results = {}
 	local currentRealm = GetRealmName()
 	local currentPlayer = UnitName("player")
-	local currentPlayerKey = currentPlayer .. " - " .. currentRealm
-	
-	-- 1. Get CURRENT character's data
-	-- Bags are always scanned live
+	local currentIDKey = currentPlayer:upper()
+
+    -- Helper function to extract name, realm, and the full name (safe on both 2- and 3-part keys)
+    local function ExtractNameAndRealm(charKey)
+        -- Attempt to extract Name and Realm from the "Name - Realm - Mod" (3-part) format
+        local name = charKey:match("^(.-) %-") 
+        local realmAndMod = charKey:match("^.- %- (.*)$")
+        local realm = realmAndMod and realmAndMod:match("^(.-) %-") -- Realm from the 3-part key
+        
+        if name and realm then
+            -- Success: It's a 3-part key (e.g., "Joffelle", "Bronzebeard")
+            return name, realm
+        else
+            -- Fallback: Assume it's the standard "Name - Realm" (2-part) format
+            return charKey:match("^(.*) %- (.*)$")
+        end
+    end
+
+
+	-- --- 1. Get CURRENT character's data (Live Scan or Saved Bank) ---
 	local currentBags = 0
+	-- Live Bag Scan (omitted for brevity)
 	for bagID = BACKPACK_CONTAINER, NUM_BAG_SLOTS do
 		for slot = 1, GetContainerNumSlots(bagID) do
 			if GetContainerItemID(bagID, slot) == itemID then
@@ -127,61 +144,100 @@ local function AddCharacterCounts(tooltip)
 		end
 	end
 	
-	-- For bank, perform a live scan if open, otherwise use saved data
 	local currentBank = 0
+	-- Bank Scan: Find the actual key used for the current player
+    local currentKey = nil
+    if addon.db.global.characters then
+        for charKey, _ in pairs(addon.db.global.characters) do
+            local name, realm = ExtractNameAndRealm(charKey)
+            if name and name:upper() == currentIDKey then
+                currentKey = charKey -- Found the case-sensitive, full key
+                break
+            end
+        end
+    end
+
 	if BankFrame and BankFrame:IsShown() then
-		-- Bank is open, do a live scan
+		-- Bank is open, do a live scan (Primary Slots)
 		for slot = 1, NUM_BANKGENERIC_SLOTS do
 			if GetContainerItemID(BANK_CONTAINER, slot) == itemID then
 				currentBank = currentBank + (select(2, GetContainerItemInfo(BANK_CONTAINER, slot)) or 1)
 			end
 		end
+		
+		-- Bank is open, do a live scan (Bank Bag Slots)
 		for bagID = NUM_BAG_SLOTS + 1, NUM_BAG_SLOTS + NUM_BANKBAGSLOTS do
-			for slot = 1, GetContainerNumSlots(bagID) do
-				if GetContainerItemID(bagID, slot) == itemID then
-					currentBank = currentBank + (select(2, GetContainerItemInfo(bagID, slot)) or 1)
-				end
-			end
+			local numSlots = GetContainerNumSlots(bagID)
+            if numSlots and numSlots > 0 then
+                for slot = 1, numSlots do
+                    if GetContainerItemID(bagID, slot) == itemID then
+                        currentBank = currentBank + (select(2, GetContainerItemInfo(bagID, slot)) or 1)
+                    end
+                end
+            end
 		end
-	else
-		-- Bank is closed, use the saved snapshot with a NUMBER key
-		if addon.db.realm.characters and addon.db.realm.characters[currentPlayerKey] and addon.db.realm.characters[currentPlayerKey].bank then
-			currentBank = addon.db.realm.characters[currentPlayerKey].bank[itemID] or 0
-		end
+	elseif currentKey then
+		-- Bank is closed, use the saved snapshot with the *found* key.
+		-- EntryCount handles both the new rich-table format and old plain-number format.
+		local charData = addon.db.global.characters[currentKey]
+		local bankEntry = charData and charData.bank and charData.bank[itemID]
+		currentBank = addon.EntryCount and addon.EntryCount(bankEntry) or
+		              (type(bankEntry) == "table" and (bankEntry.count or 0) or (tonumber(bankEntry) or 0))
 	end
 	
 	if currentBags + currentBank > 0 then
-		tinsert(results, { name = currentPlayer, isCurrent = true, total = currentBags + currentBank, bags = currentBags, bank = currentBank })
+		tinsert(results, { name = currentPlayer, realm = currentRealm, isCurrent = true, total = currentBags + currentBank, bags = currentBags, bank = currentBank })
 	end
 
-	-- 2. Scan and add OTHER characters' saved data
-	if addon.db.realm.characters then
-		for charKey, charData in pairs(addon.db.realm.characters) do
-			local name, realm = charKey:match("^(.*) %- (.*)$")
-			if name and realm and realm == currentRealm and name ~= currentPlayer then
-				-- Use a NUMBER key for lookups
-				local bagCount = (charData.bags and charData.bags[itemID]) or 0
-				local bankCount = (charData.bank and charData.bank[itemID]) or 0
-				if bagCount + bankCount > 0 then
-					tinsert(results, { name = name, total = bagCount + bankCount, bags = bagCount, bank = bankCount })
+	-- --- 2. Scan and add OTHER characters' saved data ---
+    local exclusionKey = currentKey or (currentPlayer .. " - " .. currentRealm)
+    
+	if addon.db.global.characters then
+		for charKey, charData in pairs(addon.db.global.characters) do
+			local name, realm = ExtractNameAndRealm(charKey)
+			
+			if charKey ~= exclusionKey then
+				if name and realm then
+					local EC = addon.EntryCount
+					local function ec(e)
+						if EC then return EC(e) end
+						return type(e) == "table" and (e.count or 0) or (tonumber(e) or 0)
+					end
+					local bagCount  = ec(charData.bags  and charData.bags[itemID])
+					local bankCount = ec(charData.bank  and charData.bank[itemID])
+					if bagCount + bankCount > 0 then
+						tinsert(results, { name = name, realm = realm, total = bagCount + bankCount, bags = bagCount, bank = bankCount })
+					end
 				end
 			end
 		end
 	end
 
-	-- 3. Display all results if any were found
+	-- --- 3. Display all results if any were found ---
 	if #results > 0 then
+		tsort(results, function(a, b)
+			if a.isCurrent then return true end
+			if b.isCurrent then return false end
+			return a.name < b.name
+		end)
+		
 		tooltip:AddLine(" ")
 		tooltip:AddLine((L["Character Counts:"] or "Character Counts:"), 0.6, 0.8, 1.0)
 		for _, data in pairs(results) do
 			local nameText = data.name
+			local realmText = data.realm
 			if data.isCurrent then
 				nameText = "|cffFFFF00" .. nameText .. " (Current)|r"
+				realmText = "" 
+			else
+				realmText = "|cff808080<" .. realmText .. ">|r"
 			end
+			
 			local locationStr = string_format("(|cffFFFF00Bags: %d, Bank: %d|r)", data.bags, data.bank)
-			tooltip:AddDoubleLine(nameText, data.total .. " " .. locationStr)
+			
+			tooltip:AddDoubleLine(nameText .. " " .. realmText, data.total .. " " .. locationStr)
 		end
-		return true -- Indicate that we added lines
+		return true 
 	end
 	return false
 end

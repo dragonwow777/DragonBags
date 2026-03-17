@@ -1,5 +1,5 @@
 --[[
-LanceBags - Adirelle's bag addon.
+DragonBags - Adirelle's bag addon.
 Copyright 2010-2011 Adirelle (adirelle@tagada-team.net)
 All rights reserved.
 --]]
@@ -70,8 +70,8 @@ function mod:OnEnable()
 	end
 	addon:HookBagFrameCreation(self, 'OnBagFrameCreated')
 
-	self:RegisterMessage('LanceBags_InteractingWindowChanged')
-	self:RegisterBucketMessage('LanceBags_BagUpdated', 0.2)
+	self:RegisterMessage('DragonBags_InteractingWindowChanged')
+	self:RegisterBucketMessage('DragonBags_BagUpdated', 0.2)
 	self:RegisterEvent('PLAYER_REGEN_DISABLED', 'RefreshAllBags')
 	self:RegisterEvent('PLAYER_REGEN_ENABLED')
 	self:RegisterEvent('LOOT_CLOSED', 'AutomaticTidy')
@@ -98,7 +98,7 @@ function mod:GetOptions()
 	}, addon:GetOptionHandler(self)
 end
 
-function mod:LanceBags_InteractingWindowChanged(event, new)
+function mod:DragonBags_InteractingWindowChanged(event, new)
 	if not new then
 		return self:AutomaticTidy(event)
 	end
@@ -118,8 +118,8 @@ end
 
 local wasLocked = {}
 local wasCached = {}
-function mod:LanceBags_BagUpdated(bagIds)
-	self:Debug('LanceBags_BagUpdated')
+function mod:DragonBags_BagUpdated(bagIds)
+	self:Debug('DragonBags_BagUpdated')
 	wipe(wasLocked)
 	wipe(wasCached)
 	for name, bag in pairs(bags) do
@@ -168,7 +168,7 @@ end
 
 local function TidyButton_OnClick(button)
 	PlaySound("igMainMenuOptionCheckBoxOn")
-		addon:SendMessage('LanceBags_TidyBagsButtonClick')
+		addon:SendMessage('DragonBags_TidyBagsButtonClick')
 	return button.bag:Tidy()
 
 end
@@ -276,7 +276,7 @@ function bagProto:ProcessInternal()
 	self.running = nil
 	self:UpdateButton("ProcessInternal")
 	self:Debug("Done")
-	addon:SendMessage('LanceBags_TidyBags')
+	addon:SendMessage('DragonBags_TidyBags')
 end
 
 function bagProto:Process()

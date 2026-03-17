@@ -1,5 +1,5 @@
 --[[
-LanceBags - Adirelle's bag addon.
+DragonBags - Adirelle's bag addon.
 Copyright 2010-2011 Adirelle (adirelle@tagada-team.net)
 All rights reserved.
 --]]
@@ -17,6 +17,7 @@ local GetContainerItemInfo = _G.GetContainerItemInfo
 local GetContainerItemLink = _G.GetContainerItemLink
 local GetContainerItemQuestInfo = _G.GetContainerItemQuestInfo
 local GetContainerNumFreeSlots = _G.GetContainerNumFreeSlots
+local GameTooltip = _G.GameTooltip
 local GetItemInfo = _G.GetItemInfo
 local GetItemQualityColor = _G.GetItemQualityColor
 local IsInventoryItemLocked = _G.IsInventoryItemLocked
@@ -61,6 +62,58 @@ function buttonProto:OnCreate()
     self:SetScript("OnHide", self.OnHide)
     self:SetWidth(ITEM_SIZE)
     self:SetHeight(ITEM_SIZE)
+
+    -- Wrap hover scripts once at creation time to make every button virtual-bag-aware.
+    -- Virtual bag IDs >= 200 are used for snapshot mode.
+    -- WoW's native ContainerFrameItemButton_OnEnter calls GetContainerItemInfo()
+    -- with self.bag, which crashes for virtual IDs, so we intercept it here.
+    --
+    -- OnClick/OnDoubleClick are NOT wrapped here.  SetScript("OnClick", addonFunc)
+    -- would taint the button, causing WoW to deny UseContainerItem/PickupContainerItem
+    -- ("denied by Blizzard UI") because those are protected functions.  Click
+    -- suppression on snapshot buttons is handled in OnAcquire via RegisterForClicks().
+    do
+        local origOnEnter       = self:GetScript("OnEnter")
+        local origOnLeave       = self:GetScript("OnLeave")
+
+        self:SetScript("OnEnter", function(btn)
+            if btn.bag and btn.bag >= 200 then
+                -- Resolve the best available link.
+                -- New-format saves store the full |Hitem:...|h[Name]|h hyperlink.
+                -- Old-format saves only stored "item:N"; try GetItemInfo to upgrade.
+                local link = btn.itemLink
+                if link and not link:find("|H", 1, true) and btn.itemId then
+                    local _, fullLink = GetItemInfo(btn.itemId)
+                    if fullLink then link = fullLink end
+                end
+                if link then
+                    -- Block GameTooltip_OnUpdate from overwriting our tooltip.
+                    -- The button template defines UpdateTooltip(), which calls
+                    -- SetBagItem(self:GetParent():GetID(), self:GetID()).
+                    -- For snapshot buttons parented to the container frame,
+                    -- GetParent():GetID() returns 0 (= BACKPACK_CONTAINER), so the
+                    -- OnUpdate fires every frame and replaces our hyperlink tooltip
+                    -- with the live backpack item at the same slot number.
+                    -- Override the instance method with a no-op to prevent this.
+                    btn.UpdateTooltip = function() end
+                    GameTooltip:Hide()
+                    GameTooltip:SetOwner(btn, "ANCHOR_LEFT")
+                    GameTooltip:SetHyperlink(link)
+                    GameTooltip:Show()
+                end
+                return
+            end
+            if origOnEnter then origOnEnter(btn) end
+        end)
+        self:SetScript("OnLeave", function(btn)
+            if btn.bag and btn.bag >= 200 then
+                btn.UpdateTooltip = nil  -- restore template UpdateTooltip for pool reuse
+                GameTooltip:Hide()
+                return
+            end
+            if origOnLeave then origOnLeave(btn) end
+        end)
+    end
 end
 
 function buttonProto:OnAcquire(container, bag, slot)
@@ -69,8 +122,24 @@ function buttonProto:OnAcquire(container, bag, slot)
     self.slot = slot
 	self.slotId = GetSlotId(bag, slot)
     self.stack = nil
-    self:SetParent(addon.itemParentFrames[bag])
+    -- Virtual bags (>= 200) have no item parent frame; parent to the
+    -- ContainerFrame directly so the button renders inside the frame.
+    local parentFrame = addon.itemParentFrames[bag] or container
+    self:SetParent(parentFrame)
     self:SetID(slot)
+    -- Snapshot buttons (bag >= 200) must never fire OnClick/OnDoubleClick.
+    -- The template handler uses GetParent():GetID() + GetID() for bag/slot, which
+    -- maps virtual slot numbers to live backpack positions and would accidentally
+    -- call UseContainerItem on the wrong live item.
+    -- RegisterForClicks() with no arguments deregisters all click types so
+    -- OnClick/OnDoubleClick never fire.  Hover events (OnEnter/OnLeave) are
+    -- unaffected, so snapshot tooltips still work.
+    -- Live buttons restore the standard registration every acquire.
+    if bag >= 200 then
+        self:RegisterForClicks()
+    else
+        self:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    end
     self:FullUpdate()
 end
 
@@ -79,7 +148,7 @@ do
     local orig_OnAcquire = buttonProtoHook.OnAcquire
 
     function buttonProtoHook:OnAcquire(container, bag, slot)
-        -- 1) vanilla LanceBags acquire
+        -- 1) vanilla DragonBags acquire
         orig_OnAcquire(self, container, bag, slot)
 
         -- 2) only if AddOnSkins is present, retrigger OnCreate hooks
@@ -117,6 +186,7 @@ function buttonProto:ToString()
 end
 
 function buttonProto:IsLocked()
+    if self.bag and self.bag >= 200 then return false end  -- snapshot items never locked
     return select(3, GetContainerItemInfo(self.bag, self.slot))
 end
 
@@ -181,6 +251,9 @@ function buttonProto:GetItemLink()
 end
 
 function buttonProto:GetCount()
+    if self.bag and self.bag >= 200 then
+        return self.count or 0
+    end
     return select(2, GetContainerItemInfo(self.bag, self.slot)) or 0
 end
 
@@ -231,8 +304,8 @@ function buttonProto:OnShow()
         self:RegisterEvent('INVENTORY_SEARCH_UPDATE', 'UpdateSearch')
     end
     self:RegisterEvent('UNIT_QUEST_LOG_CHANGED')
-    self:RegisterMessage('LanceBags_UpdateAllButtons', 'Update')
-    self:RegisterMessage('LanceBags_GlobalLockChanged', 'UpdateLock')
+    self:RegisterMessage('DragonBags_UpdateAllButtons', 'Update')
+    self:RegisterMessage('DragonBags_GlobalLockChanged', 'UpdateLock')
     self:FullUpdate()
 end
 
@@ -263,6 +336,21 @@ end
 
 function buttonProto:FullUpdate()
     local bag, slot = self.bag, self.slot
+    -- Snapshot (virtual) bag IDs are >= 200 — use saved slotData instead of live WoW APIs.
+    if bag and bag >= 200 then
+        local content = self.container and self.container.content[bag]
+        local slotData = content and content[slot]
+        if slotData and slotData.link then
+            self.itemId   = slotData.itemId
+            self.itemLink = slotData.link
+            self.hasItem  = true
+            self.texture  = slotData.texture
+            self.bagFamily = slotData.bagFamily or 0
+            self.count     = slotData.count or 1
+            self:Update()
+        end
+        return
+    end
     self.itemId = GetContainerItemID(bag, slot)
     self.itemLink = GetContainerItemLink(bag, slot)
     self.hasItem = not not self.itemId
@@ -306,7 +394,7 @@ function buttonProto:Update()
     if self.isUpgrade then
         if not self.upgradeTexture then
             local t = self:CreateTexture(nil, "OVERLAY")
-            t:SetTexture([[Interface\AddOns\LanceBags\assets\UpgradeArrow.tga]])
+            t:SetTexture([[Interface\AddOns\DragonBags\assets\UpgradeArrow.tga]])
             t:SetPoint("TOPLEFT", self.IconTexture, 10, -2)
             t:SetSize(18, 18)
             self.upgradeTexture = t
@@ -341,7 +429,7 @@ function buttonProto:Update()
         self:UpdateSearch()
     end
 
-    addon:SendMessage("LanceBags_UpdateButton", self)
+    addon:SendMessage("DragonBags_UpdateButton", self)
 end
 
 function buttonProto:UpdateCount()
@@ -364,7 +452,7 @@ function buttonProto:UpdateLock(isolatedEvent)
         SetItemButtonDesaturated(self, self:IsLocked())
     end
     if isolatedEvent then
-        addon:SendMessage('LanceBags_UpdateLock', self)
+        addon:SendMessage('DragonBags_UpdateLock', self)
     end
 end
 
@@ -417,7 +505,7 @@ function buttonProto:UpdateBorder(isolatedEvent)
 			border:SetBlendMode(blendMode)
             border:Show()
             if isolatedEvent then
-                addon:SendMessage('LanceBags_UpdateBorder', self)
+                addon:SendMessage('DragonBags_UpdateBorder', self)
             end
             return
         end
@@ -425,7 +513,7 @@ function buttonProto:UpdateBorder(isolatedEvent)
 
     self.IconQuestTexture:Hide()
     if isolatedEvent then
-        addon:SendMessage('LanceBags_UpdateBorder', self)
+        addon:SendMessage('DragonBags_UpdateBorder', self)
     end
 end
 
@@ -463,7 +551,7 @@ if Masque then
             return
         end
 
-        -- If the LanceBags group is disabled in Masque, don't run the hook
+        -- If the DragonBags group is disabled in Masque, don't run the hook
         if self.masqueGroup.db and self.masqueGroup.db.Disabled then
             return
         end
@@ -477,15 +565,15 @@ if Masque then
             self.masqueInitialized = true
         end
 
-        -- Hide the default LanceBags border when Masque is active
+        -- Hide the default DragonBags border when Masque is active
         local iqTex = self.IconQuestTexture
         local iqTexPath = iqTex:GetTexture()
-        local isLanceBagsQuestBang = (iqTexPath == TEXTURE_ITEM_QUEST_BANG)
-        local isLanceBagsDefaultBorder = (iqTexPath == [[Interface\ContainerFrame\UI-Icon-QuestBorder]] or iqTexPath == [[Interface\Buttons\UI-ActionButton-Border]])
+        local isDragonBagsQuestBang = (iqTexPath == TEXTURE_ITEM_QUEST_BANG)
+        local isDragonBagsDefaultBorder = (iqTexPath == [[Interface\ContainerFrame\UI-Icon-QuestBorder]] or iqTexPath == [[Interface\Buttons\UI-ActionButton-Border]])
 
-        if iqTex:IsShown() and isLanceBagsDefaultBorder and not isLanceBagsQuestBang then
+        if iqTex:IsShown() and isDragonBagsDefaultBorder and not isDragonBagsQuestBang then
             iqTex:Hide()
-        elseif iqTex:IsShown() and isLanceBagsQuestBang then
+        elseif iqTex:IsShown() and isDragonBagsQuestBang then
             -- Quest Bang remains visible
         else
             if iqTex then
@@ -529,7 +617,7 @@ if Masque then
             end
         end
 
-        -- Dim the icon for junk items (as in the original LanceBags)
+        -- Dim the icon for junk items (as in the original DragonBags)
         if self.hasItem then
             local _, _, itemQuality = GetItemInfo(self.itemId)
             if itemQuality == ITEM_QUALITY_POOR and addon.db.profile.dimJunk then
@@ -551,7 +639,7 @@ if Masque then
             return
         end
 
-        -- If the LanceBags group is disabled in Masque, don't run the hook
+        -- If the DragonBags group is disabled in Masque, don't run the hook
         if self.masqueGroup.db and self.masqueGroup.db.Disabled then
             return
         end
@@ -577,7 +665,7 @@ if Masque then
 
     -- Hook for ReSkin
     local function HookMasqueReSkin(masqueGroup)
-        if masqueGroup and masqueGroup.ReSkin and not masqueGroup._LanceBagsReSkinHooked then
+        if masqueGroup and masqueGroup.ReSkin and not masqueGroup._DragonBagsReSkinHooked then
             hooksecurefunc(masqueGroup, "ReSkin", function(self_group)
                 if self_group.Buttons then
                     for buttonInstance, _ in pairs(self_group.Buttons) do
@@ -589,13 +677,13 @@ if Masque then
                     end
                 end
             end)
-            masqueGroup._LanceBagsReSkinHooked = true
+            masqueGroup._DragonBagsReSkinHooked = true
         end
     end
 
     -- Hook for Disable
     local function HookMasqueDisable(masqueGroup)
-        if masqueGroup and masqueGroup.__Disable and not masqueGroup._LanceBagsDisableHooked then
+        if masqueGroup and masqueGroup.__Disable and not masqueGroup._DragonBagsDisableHooked then
             hooksecurefunc(masqueGroup, "__Disable", function(self_group)
                 if self_group.Buttons then
                     for buttonInstance, _ in pairs(self_group.Buttons) do
@@ -607,7 +695,7 @@ if Masque then
                     end
                 end
             end)
-            masqueGroup._LanceBagsDisableHooked = true
+            masqueGroup._DragonBagsDisableHooked = true
         end
     end
 
@@ -723,8 +811,8 @@ function stackProto:IsEmpty()
 end
 
 function stackProto:OnShow()
-    self:RegisterMessage('LanceBags_UpdateAllButtons', 'Update')
-    self:RegisterMessage('LanceBags_PostContentUpdate')
+    self:RegisterMessage('DragonBags_UpdateAllButtons', 'Update')
+    self:RegisterMessage('DragonBags_PostContentUpdate')
     self:RegisterEvent('ITEM_LOCK_CHANGED')
     if self.button then
         self.button:Show()
@@ -785,7 +873,7 @@ function stackProto:UpdateCount()
     self.dirtyCount = nil
 end
 
-function stackProto:LanceBags_PostContentUpdate()
+function stackProto:DragonBags_PostContentUpdate()
     if self.dirtyCount then
         self:UpdateCount()
     end

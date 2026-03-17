@@ -1,8 +1,8 @@
 =================================
- LanceBags - How to Use
+ DragonBags - How to Use
 =================================
 
-Thank you for using this modified version of AdiBags, forked and renamed to LanceBags for the WotLK 3.3.5 client.
+Thank you for using this modified version of AdiBags, forked and renamed to DragonBags for the WotLK 3.3.5 client.
 
 
 -------------------
@@ -10,22 +10,22 @@ Thank you for using this modified version of AdiBags, forked and renamed to Lanc
 -------------------
 
 1. Extract the downloaded .zip file.
-2. Find the folder named 'LanceBags-main'.
+2. Find the folder named 'DragonBags-main'.
 3. Move this folder into your WoW AddOns directory:
    World of Warcraft\Interface\AddOns\  
    (if not using World of Warcraft as your game directory - 
    change that to the directory you are using)
 4. Rename the folder to exactly:
-   LanceBags
+   DragonBags
 
 -------------------
  ⚙️ Usage
 -------------------
 
-/lancebags or /lb - Opens the main configuration panel.
+/DragonBags or /lb - Opens the main configuration panel.
 
 Bag Menu Clicks:
- - Left-Click the bag icon in the top-left corner to open the LanceBags configuration menu.
+ - Left-Click the bag icon in the top-left corner to open the DragonBags configuration menu.
  - Right-click on any of your current bags to automatically sort bag space out of it so you can replace it by new one.
  - Left-Click an item in your bag and drag it to a category title to assign it to another category.
 
@@ -46,5 +46,5 @@ Bag Menu Clicks:
  ❤️ Credit
 -------------------
 
-LanceBags is a fork of the addon AdiBags, created to avoid collisions with the original addon.
+DragonBags is a fork of the addon AdiBags, created to avoid collisions with the original addon.
 All credit for the original addon and its framework goes to the original author, Adirelle.

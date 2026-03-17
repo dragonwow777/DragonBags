@@ -1,5 +1,5 @@
 --[[
-LanceBags - Adirelle's bag addon.
+DragonBags - Adirelle's bag addon.
 Copyright 2010-2011 Adirelle (adirelle@tagada-team.net)
 All rights reserved.
 --]]
@@ -192,8 +192,14 @@ function simpleLayeredRegionProto:OnLayout()
 			end
 			widget:SetPoint(anchorPoint, self, x + data.xOffset, y + data.yOffset)
 			local w, h = widget:GetWidth(), widget:GetHeight()
-			x = x + dx * (data.size or w)
+
+			-- ## FIX ## This now correctly uses the widget's width (w) for horizontal stepping.
+			-- The old line was: x = x + dx * (data.size or w)
+			x = x + dx * w
+			
+			-- This line was already correct for vertical stepping.
 			y = y + dy * (data.size or h)
+			
 			width = max(width, x * dx, w * sx)
 			height = max(height, y * dy, h * sy)
 			num = num + 1

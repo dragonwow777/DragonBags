@@ -1,5 +1,5 @@
 --[[
-LanceBags - Adirelle's bag addon.
+DragonBags - Adirelle's bag addon.
 Copyright 2010 Adirelle (adirelle@tagada-team.net)
 All rights reserved.
 --]]
@@ -67,15 +67,15 @@ function mod:OnEnable()
 		end
 	end
 
-	self:RegisterMessage('LanceBags_PreFilter')
-	self:RegisterMessage('LanceBags_UpdateButton', 'UpdateButton')
+	self:RegisterMessage('DragonBags_PreFilter')
+	self:RegisterMessage('DragonBags_UpdateButton', 'UpdateButton')
 
 	self:RegisterEvent('UNIT_INVENTORY_CHANGED')
 	self:RegisterEvent('BANKFRAME_OPENED')
 	self:RegisterEvent('BANKFRAME_CLOSED')
 	self:RegisterEvent('EQUIPMENT_SWAP_PENDING')
 	self:RegisterEvent('EQUIPMENT_SWAP_FINISHED')
-	self:RegisterBucketMessage('LanceBags_BagUpdated', 0.2, 'UpdateBags')
+	self:RegisterBucketMessage('DragonBags_BagUpdated', 0.2, 'UpdateBags')
 	
 	frozen = true
 	self:ScheduleTimer('FirstUpdate', 2)
@@ -101,7 +101,7 @@ end
 local function ResetButton_OnClick(button)
 	PlaySound("igMainMenuOptionCheckBoxOn")
 	mod:Reset(button.bagName)
-	mod:SendMessage('LanceBags_NewItemReset')
+	mod:SendMessage('DragonBags_NewItemReset')
 
 end
 
@@ -223,7 +223,7 @@ end
 
 function mod:UpdateBags(bagIds, event)
 	if frozen then return end
-	self:Debug('UpdateBags', event or "LanceBags_BagUpdated")
+	self:Debug('UpdateBags', event or "DragonBags_BagUpdated")
 	for name, bag in pairs(bags) do
 		if bag.available and (bag.first or (bag.container and bag.container:IsVisible())) then
 			local counts = bag.counts
@@ -248,7 +248,7 @@ function mod:UpdateBags(bagIds, event)
 
 				-- Update inventory if need be
 				if not inventoryScanned then
-					self:UpdateInventory(event or "LanceBags_BagUpdated")
+					self:UpdateInventory(event or "DragonBags_BagUpdated")
 				end
 
 				-- Merge items from inventory
@@ -300,7 +300,7 @@ function mod:UpdateBags(bagIds, event)
 	end
 	if filterChanged then
 		self:Debug('Need to filter bags again')
-		self:SendMessage('LanceBags_FiltersChanged')
+		self:SendMessage('DragonBags_FiltersChanged')
 	end
 end
 
@@ -343,7 +343,7 @@ end
 do
 	local currentContainerName
 
-	function mod:LanceBags_PreFilter(event, container)
+	function mod:DragonBags_PreFilter(event, container)
 		currentContainerName = container.name
 	end
 

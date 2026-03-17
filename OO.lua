@@ -1,5 +1,5 @@
 --[[
-LanceBags - Adirelle's bag addon.
+DragonBags - Adirelle's bag addon.
 Copyright 2010-2011 Adirelle (adirelle@tagada-team.net)
 All rights reserved.
 --]]
@@ -201,30 +201,29 @@ function addon:GetPool(name)
 	return name and pools[name]
 end
 
---[===[@debug@
--- Globals: SLASH_ADIBAGSOODEBUG1
-SLASH_ADIBAGSOODEBUG1 = "/aboo"
-function SlashCmdList.ADIBAGSOODEBUG()
-	print('Classes:')
-	for name, class in pairs(classes) do
-		print(format("- %s: type: %s, template: %s, serial: %d", name, class.frameType, tostring(class.frameTemplate), class.serial))
-	end
-	print('Pools:')
-	for name, pool in pairs(pools) do
-		local heapSize, numActives = 0, 0
-		for k in pairs(pool.activtes) do
-			numActives = numActives + 1
-		end
-		for k in pairs(pool.heap) do
-			heapSize = heapSize + 1
-		end
-		print(format("- %s: heap size: %d, number of active objects: %d", name, heapSize, numActives))
-	end
-end
---@end-debug@]===]
-
 -- Define a global flag to keep track of debug state
 addon.debugEnabled = false
+
+
+-- New slash command to toggle the Finance frame
+local FINANCE_TOGGLE_COMMAND = "/lbf"
+local function ToggleFinanceFrame()
+    local financeModule = addon:GetModule('Finance')
+    if financeModule then
+        financeModule:ToggleDisplay()
+    else
+        -- Fallback message if the module somehow fails to load
+        print("DragonBags Error: Finance module not available.")
+    end
+end
+
+-- Register the slash command (using the AceConsole system directly for robustness)
+if not _G.SLASH_LBF1 then
+    _G.SLASH_LBF1 = FINANCE_TOGGLE_COMMAND
+    SlashCmdList["LBF"] = ToggleFinanceFrame
+end
+
+
 
 -- Slash command to toggle debug
 SLASH_ADIBAGSOODEBUG1 = "/aboo"
@@ -238,7 +237,7 @@ function SlashCmdList.ADIBAGSOODEBUG()
 	else
 		-- Enable debugging
 		addon.debugEnabled = true
-		addon.Debug = function(...) print("LanceBags Debug:", ...) end -- Enable debug printing
+		addon.Debug = function(...) print("DragonBags Debug:", ...) end -- Enable debug printing
 		print("Debugging is now enabled.")
 	end
 end

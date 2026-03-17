@@ -1,5 +1,5 @@
 --[[
-LanceBags - Adirelle's bag addon.
+DragonBags - Adirelle's bag addon.
 Copyright 2010-2011 Adirelle (adirelle@tagada-team.net)
 All rights reserved.
 --]]
@@ -67,8 +67,8 @@ function mod:AssignItems(section, category, ...)
 		local itemId = select(i, ...)
 		mod.db.profile.overrides[itemId] = key
 	end
-	self:SendMessage('LanceBags_OverrideFilter', section, category, ...)
-	self:SendMessage('LanceBags_FiltersChanged')
+	self:SendMessage('DragonBags_OverrideFilter', section, category, ...)
+	self:SendMessage('DragonBags_FiltersChanged')
 	local acr = LibStub('AceConfigRegistry-3.0', true)
 	if acr then
 		acr:NotifyChange(addonName)

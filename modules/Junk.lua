@@ -1,5 +1,5 @@
 --[[
-LanceBags - Adirelle's bag addon.
+DragonBags - Adirelle's bag addon.
 Copyright 2010-2011 Adirelle (adirelle@tagada-team.net)
 All rights reserved.
 --]]
@@ -50,7 +50,7 @@ end
 
 function mod:OnEnable()
 	prefs = self.db.profile
-	self:RegisterMessage('LanceBags_OverrideFilter')
+	self:RegisterMessage('DragonBags_OverrideFilter')
 	self:Hook(addon, 'IsJunk')
 	wipe(cache)
 end
@@ -93,7 +93,7 @@ function mod:Filter(slotData)
 	return cache[slotData.itemId] and JUNK or nil
 end
 
-function mod:LanceBags_OverrideFilter(event, section, category, ...)
+function mod:DragonBags_OverrideFilter(event, section, category, ...)
 	local changed = false
 	local include, exclude = prefs.include, prefs.exclude
 	for i = 1, select('#', ...) do
@@ -116,7 +116,7 @@ end
 
 function mod:Update()
 	wipe(cache)
-	self:SendMessage('LanceBags_FiltersChanged')
+	self:SendMessage('DragonBags_FiltersChanged')
 	local acr = LibStub('AceConfigRegistry-3.0', true)
 	if acr then
 		acr:NotifyChange(addonName)
@@ -193,7 +193,7 @@ if Scrap and type(Scrap.IsJunk) == "function" then
 	Scrap:HookScript('OnReceiveDrag', function()
 		if prefs.sources.Scrap then
 			wipe(cache)
-			addon:SendMessage("LanceBags_FiltersChanged")
+			addon:SendMessage("DragonBags_FiltersChanged")
 		end
 	end)
 

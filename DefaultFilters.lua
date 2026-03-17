@@ -1,5 +1,5 @@
 --[[
-LanceBags - Adirelle's bag addon.
+DragonBags - Adirelle's bag addon.
 Copyright 2010-2011 Adirelle (adirelle@tagada-team.net)
 All rights reserved.
 --]]
@@ -68,8 +68,8 @@ function addon:SetupDefaultFilters()
 
         function setFilter:OnEnable()
             self:RegisterEvent('EQUIPMENT_SETS_CHANGED')
-            self:RegisterMessage("LanceBags_PreFilter")
-            self:RegisterMessage("LanceBags_PreContentUpdate")
+            self:RegisterMessage("DragonBags_PreFilter")
+            self:RegisterMessage("DragonBags_PreContentUpdate")
             self:UpdateNames()
         end
 
@@ -119,14 +119,14 @@ function addon:SetupDefaultFilters()
 
         function setFilter:EQUIPMENT_SETS_CHANGED(event)
             self:UpdateNames()
-            self:SendMessage('LanceBags_FiltersChanged', true)
+            self:SendMessage('DragonBags_FiltersChanged', true)
         end
 
-        function setFilter:LanceBags_PreContentUpdate(event)
+        function setFilter:DragonBags_PreContentUpdate(event)
             self.dirty = true
         end
 
-        function setFilter:LanceBags_PreFilter(event)
+        function setFilter:DragonBags_PreFilter(event)
             if self.dirty then
                 self:UpdateSlots()
             end
@@ -163,7 +163,7 @@ function addon:SetupDefaultFilters()
                     end,
                     set = function(info, name, value)
                         self.db.char.mergedSets[name] = value
-                        self:SendMessage('LanceBags_FiltersChanged')
+                        self:SendMessage('DragonBags_FiltersChanged')
                     end,
                     disabled = function()
                         return not self.db.profile.oneSectionPerSet

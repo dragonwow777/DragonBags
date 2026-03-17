@@ -1,5 +1,5 @@
 --[[
-LanceBags - Adirelle's bag addon.
+DragonBags - Adirelle's bag addon.
 Copyright 2010-2011 Adirelle (adirelle@tagada-team.net)
 All rights reserved.
 --]]
@@ -73,9 +73,9 @@ function handlerProto:Set(info, value, ...)
 	end
 	self.dbHolder:Debug('ConfigSet', path, value, ...)
 	if self.isFilter then
-		self.dbHolder:SendMessage('LanceBags_ConfigChanged', 'filter')
+		self.dbHolder:SendMessage('DragonBags_ConfigChanged', 'filter')
 	else
-		self.dbHolder:SendMessage('LanceBags_ConfigChanged', path)
+		self.dbHolder:SendMessage('DragonBags_ConfigChanged', path)
 	end
 	if type(self.PostSet) == "function" then
 		self:PostSet(path, value, ...)
@@ -269,7 +269,7 @@ function addon:GetOptions()
 		args = {
 			enabled = {
 				name = L['Enabled'],
-				desc = L['Uncheck this to disable LanceBags.'],
+				desc = L['Uncheck this to disable DragonBags.'],
 				type = 'toggle',
 				order = 100,
 				disabled = false,
@@ -316,7 +316,7 @@ function addon:GetOptions()
 						set = function(info, newScale)
 							self.db.profile.scale = newScale
 							self:LayoutBags()
-							self:SendMessage('LanceBags_LayoutChanged')
+							self:SendMessage('DragonBags_LayoutChanged')
 						end,
 					},
 					rowWidth = {
@@ -329,18 +329,32 @@ function addon:GetOptions()
 							Backpack = {
 								name = L['Backpack'],
 								type = 'range',
-								min = 4,
+								min = 6,
 								max = 16,
 								step = 1,
 								arg = { "rowWidth", "Backpack" },
+								-- NEW: Set function to trigger immediate layout update
+								set = function(info, value)
+									-- Access the database profile directly through the handler's dbHolder
+									info.handler.dbHolder.db.profile.rowWidth.Backpack = value
+									addon:LayoutBags()
+									addon:SendMessage('DragonBags_LayoutChanged')
+								end,
 							},
 							Bank = {
 								name = L['Bank'],
 								type = 'range',
-								min = 4,
+								min = 6,
 								max = 16,
 								step = 1,
 								arg = { "rowWidth", "Bank" },
+								-- NEW: Set function to trigger immediate layout update
+								set = function(info, value)
+									-- Access the database profile directly through the handler's dbHolder
+									info.handler.dbHolder.db.profile.rowWidth.Bank = value
+									addon:LayoutBags()
+									addon:SendMessage('DragonBags_LayoutChanged')
+								end,
 							},
 						},
 					},
@@ -409,7 +423,7 @@ function addon:GetOptions()
 							texture = {
 								name = 'Texture',
 								type = 'select',
-								dialogControl = 'LanceBags_LSM30_Background',
+								dialogControl = 'LSM30_Background',
 								values = AceGUIWidgetLSMlists.background,
 								order = 10,
 								arg = { "skin", "background" },
@@ -426,7 +440,7 @@ function addon:GetOptions()
 							border = {
 								name = 'Border',
 								type = 'select',
-								dialogControl = 'LanceBags_LSM30_Border',
+								dialogControl = 'LSM30_Border',
 								values = AceGUIWidgetLSMlists.border,
 								order = 30,
 								arg = { "skin", "border" },
@@ -609,6 +623,103 @@ function addon:GetOptions()
 					},
 				},
 			},
+			dataManagement = {
+                name = L['Data Management'],
+                desc = L['Manage saved data for all characters.'],
+                type = 'group',
+                order = 550,
+                args = {
+                    purgeHeader = {
+                        name = L['Character Database'],
+                        type = 'header',
+                        order = 1,
+                    },
+                    instruction = {
+                        name = "|cffFFD700" .. L["Note: Clicking a character button below will prompt you to permanently delete their inventory and finance data."] .. "|r",
+                        type = 'description',
+                        order = 2,
+                    },
+                    realmHeader = {
+                        name = "\n|cffffffff" .. _G.GetRealmName() .. "|r",
+                        type = 'description',
+                        fontSize = "medium",
+                        order = 3,
+                    },
+                    characters = {
+                        name = "",
+                        type = 'group',
+                        inline = true,
+                        order = 4,
+                        args = (function()
+                            local charArgs = {}
+                            local count = 10
+                            local currentRealm = _G.GetRealmName()
+                            local allChars = {}
+
+                            -- DEEP SCAN: Pull names from Main, Global, and Finance tables
+                            if DragonBagsDB and DragonBagsDB.realm and DragonBagsDB.realm.characters then
+                                for k, v in pairs(DragonBagsDB.realm.characters) do
+                                    if k:find("- " .. currentRealm) then allChars[k] = v.lastUpdate or 0 end
+                                end
+                            end
+                            if addon.db and addon.db.sv and addon.db.sv.realm then
+                                for rName, rData in pairs(addon.db.sv.realm) do
+                                    if rName == currentRealm and rData.characters then
+                                        for k in pairs(rData.characters) do allChars[k] = allChars[k] or 0 end
+                                    end
+                                end
+                            end
+                            if DragonBagsFinanceDB then
+                                for k, v in pairs(DragonBagsFinanceDB) do
+                                    if k:find("- " .. currentRealm) then
+                                        local fLog = v.transaction_log
+                                        local ts = (fLog and fLog[#fLog] and fLog[#fLog].ts) or 0
+                                        allChars[k] = _G.math.max(allChars[k] or 0, ts)
+                                    end
+                                end
+                            end
+
+                            -- Alphabetical Sort for better alignment
+                            local sortedKeys = {}
+                            for k in pairs(allChars) do table.insert(sortedKeys, k) end
+                            table.sort(sortedKeys)
+
+                            for _, charKey in ipairs(sortedKeys) do
+                                local lastTS = allChars[charKey]
+                                local nameOnly = charKey:match("^(.-) %-") or charKey
+                                local dateStr = (lastTS > 0) and _G.date("%Y-%m-%d", lastTS) or L["Unknown"]
+
+                                -- Name Button (Left Column)
+                                charArgs[charKey:gsub("%s", "") .. "Btn"] = {
+                                    name = nameOnly,
+                                    type = 'execute',
+                                    width = "normal", -- Fixed width for alignment
+                                    confirm = true,
+                                    confirmText = _G.string.format(L["Are you sure? This will delete all records for %s."], charKey),
+                                    func = function()
+                                        if DragonBagsDB.realm and DragonBagsDB.realm.characters then DragonBagsDB.realm.characters[charKey] = nil end
+                                        if DragonBagsFinanceDB then DragonBagsFinanceDB[charKey] = nil end
+                                        if addon.db.sv and addon.db.sv.realm and addon.db.sv.realm[currentRealm] then
+                                            addon.db.sv.realm[currentRealm].characters[charKey] = nil
+                                        end
+                                        _G.print("|cff33ff99DragonBags:|r " .. L["Purged records for "] .. charKey)
+                                    end,
+                                    order = count,
+                                }
+                                -- Date Text (Right Column)
+                                charArgs[charKey:gsub("%s", "") .. "Date"] = {
+                                    name = "|cffaaaaaa" .. L["Last Seen: "] .. dateStr .. "|r",
+                                    type = 'description',
+                                    width = "normal", -- Same width to keep columns straight
+                                    order = count + 1,
+                                }
+                                count = count + 2
+                            end
+                            return charArgs
+                        end)(),
+                    },
+                },
+            },
 			filters = {
 				name = L['Filters'],
 				desc = L['Toggle and configure item filters.'],
@@ -635,7 +746,7 @@ function addon:GetOptions()
 	end
 	UpdateFilterOrder()
 
-	LibStub('AceEvent-3.0').RegisterMessage(addonName.."Options", 'LanceBags_FiltersChanged', UpdateFilterOrder)
+	LibStub('AceEvent-3.0').RegisterMessage(addonName.."Options", 'DragonBags_FiltersChanged', UpdateFilterOrder)
 
 	return options
 end
@@ -676,10 +787,10 @@ function addon:InitializeOptions()
 	AceConfig:RegisterOptionsTable(addonName, function() return self:GetOptions() end)
 
     -- ## CHANGE ## Updated the slash commands.
-	LibStub('AceConsole-3.0'):RegisterChatCommand("lb", function(cmd)
+	LibStub('AceConsole-3.0'):RegisterChatCommand("db", function(cmd)
 		addon:OpenOptions(strsplit(' ', cmd or ""))
 	end, true)
-	LibStub('AceConsole-3.0'):RegisterChatCommand("lancebags", function(cmd)
+	LibStub('AceConsole-3.0'):RegisterChatCommand("DragonBags", function(cmd)
 		addon:OpenOptions(strsplit(' ', cmd or ""))
 	end, true)
 end

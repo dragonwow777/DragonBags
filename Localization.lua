@@ -1,5 +1,5 @@
 --[[
-LanceBags - Adirelle's bag addon.
+DragonBags - Adirelle's bag addon.
 Copyright 2010-2011 Adirelle (adirelle@tagada-team.net)
 All rights reserved.
 --]]
@@ -58,8 +58,8 @@ addon.BI = LibStub('LibBabble-Inventory-3.0'):GetLookupTable()
 ------------------------ enUS ------------------------
 
 
--- LanceBags.lua
-L["LanceBags Anchor"] = true
+-- DragonBags.lua
+L["DragonBags Anchor"] = true
 L["Backpack"] = true
 L["Bank"] = true
 
@@ -160,7 +160,7 @@ L["Sorting order"] = true
 L["Strictly keep ordering"] = true
 L["Toggle and configure item filters."] = true
 L["Toggle and configure plugins."] = true
-L["Uncheck this to disable LanceBags."] = true
+L["Uncheck this to disable DragonBags."] = true
 L["Unlock anchor"] = true
 L["Use this to adjust the bag scale."] = true
 L["Use this to adjust the quality-based border opacity. 100% means fully opaque."] = true
@@ -314,10 +314,67 @@ L["Right-Click"] = true
 L["Alt-Left-Click"] = true
 L["to toggle the anchor."] = true
 L["to open bag menu."] = true
-L["to open LanceBags options."] = true
+L["to open DragonBags options."] = true
 L["to toggle anchor mode."] = true
 L["to move bag container."] = true
 L["mode."] = true
+
+-- Finance 
+
+L["DragonBags Finance Dashboard | Current Gold: "] = true
+L["Session Gain"] = true
+L["Today's Gain"] = true
+L["7 Days Gain"] = true
+
+-- Left Column: Daily Buckets
+L["Daily Buckets History (Net Gain Only)"] = "Daily Buckets History (Net Gain Only)"
+L["Date"] = "Date"
+L["Net Gain"] = "Net Gain"
+L["Count"] = "Count"
+L["No daily records found."] = "No daily records found."
+L["Gained"] = "Gained" 
+L["Spent"] = "Spent"   
+L["Net"] = "Net"      
+
+-- Left Column: Level Snapshots
+L["Level Net Gain"] = "Level Net Gain"
+L["Level Net Gain (Snapshot Comparison)"] = "Level Net Gain (Snapshot Comparison)"
+L["Level"] = "Level"
+L["Gold Amount"] = "Gold Amount"
+L["No level snapshots found."] = "No level snapshots found."
+
+-- Right Column: Source Breakdown & Ledger
+L["Source Breakdown"] = "Source Breakdown (All Time)"
+L["Source"] = "Source"
+L["No source data available."] = "No source data available."
+L["No transaction records found."] = "No transaction records found."
+
+-- Audit / Recategorization Dialog
+L["Recategorize Txn"] = "Recategorize Txn"
+L["Recategorize Transaction"] = "Recategorize Transaction"
+L["Transaction ID:"] = "Transaction ID:"
+L["Lookup"] = "Lookup"
+L["Txn: Pending..."] = "Txn: Pending..."
+L["Cancel"] = "Cancel"
+L["#%d: %s | Current Source: %s"] = "#%d: %s | Current Source: %s" 
+
+-- Ambiguity / Resolution
+L["Ambiguity Pop-up"] = "Ambiguity Pop-up"
+L["If any ambiguity exists (multiple contexts) OR if source defaults to 'other', show a pop-up to choose the category."] = "If any ambiguity exists (multiple contexts) OR if source defaults to 'other', show a pop-up to choose the category."
+L["Transaction Ambiguity"] = "Transaction Ambiguity"
+L["Please choose the correct source for this money change."] = "Please choose the correct source for this money change."
+L["Active contexts: "] = "Active contexts: "
+L["Ambiguity detected! Default source is: "] = "Ambiguity detected! Default source is: "
+
+-- Options (Finance.lua)
+L["Enable Finance UI"] = "Enable Finance UI"
+L["Toggles the main Finance UI panel (the one showing Session, Daily, etc.)."] = "Toggles the main Finance UI panel."
+L["Hide in Combat"] = "Hide in Combat"
+L["Automatically hides the Finance UI panel when you enter combat."] = "Automatically hides the Finance UI panel when you enter combat."
+L["Detailed Records Limit"] = "Detailed Records Limit"
+L["Maximum number of individual transactions to keep in the ledger (0 to disable). WARNING: Higher numbers can increase login/logout times due to larger saved variable files."] = "Maximum number of individual transactions to keep in the ledger (0 to disable). WARNING: Higher numbers can increase login/logout times due to larger saved variable files."
+L["Daily Bucket Window"] = "Daily Bucket Window"
+L["How many days of history to keep in the 'Daily Buckets' database."] = "How many days of history to keep."
 
 ------------------------ frFR ------------------------
 local locale = GetLocale()
@@ -325,7 +382,7 @@ if locale == 'frFR' then
     L["Add a dropdown menu to bags that allow to hide the sections."] = "Ajoute un menu déroulant aux sacs pour cacher les sections."
     L["Add association"] = "Ajouter l'association"
     L["Add more information in tooltips related to items in your bags."] = "Ajoute des informations additionnelles dans les bulles d'aides des objets de vos sacs."
-    L["LanceBags Anchor"] = "Ancre d'LanceBags"
+    L["DragonBags Anchor"] = "Ancre d'DragonBags"
     L["Adjust the maximum height of the bags, relative to screen size."] = "Ajustez la taille maximale des sacs, par rapport à la taille de l'écran."
     L["Adjust the maximum number of items per row."] = "Ajustez le nombre maximal d'objets par ligne."
     L["AH category"] = "Catégorie HV"
@@ -519,7 +576,7 @@ if locale == 'frFR' then
     L["Tooltip information"] = "Informations dans les bulles d'aides"
     L["Track new items"] = "Détection des nouveaux objets"
     L["Track new items in each bag, displaying a glowing aura over them and putting them in a special section. \"New\" status can be reset by clicking on the small \"N\" button at top left of bags."] = "Détecte les nouveaux objets dans chaque sac, affiche une lueur colorée auteur d'eux et les place dans une section spéciale. Les nouveaux objets peuvent être remis à zéro en cliquant sur le bouton \"N\" en haut à droite des sacs."
-    L["Uncheck this to disable LanceBags."] = "Décochez ceci pour désactiver LanceBags."
+    L["Uncheck this to disable DragonBags."] = "Décochez ceci pour désactiver DragonBags."
     L["Unlock anchor"] = "Déverrouiller l'ancre"
     L["Use this section to define any item-section association."] = "Utilisez cette section pour définir de nouvelles associations objet-section."
     L["Use this to adjust the bag scale."] = "Ajustez la taille des sacs."
@@ -538,7 +595,7 @@ elseif locale == 'deDE' then
     L["Add a dropdown menu to bags that allow to hide the sections."] = "Fügt den Taschen ein Dropdown-Menü hinzu, welches es erlaubt die Abteilung zu verstecken."
     L["Add association"] = "Füge Zuweisung hinzu"
     L["Add more information in tooltips related to items in your bags."] = "Füge mehr Informationen bezüglich der Items in deinen Taschen zum Tooltip hinzu"
-    L["LanceBags Anchor"] = "LanceBags Anker"
+    L["DragonBags Anchor"] = "DragonBags Anker"
     L["Adjust the maximum height of the bags, relative to screen size."] = "Passt die maximale Höhe der Taschen in Relation zur Monitorauflösung an."
     L["Adjust the maximum number of items per row."] = "Passt die maximale Anzahl von Gegenständen pro Reihe an"
     L["AH category"] = "AH Kategorie"
@@ -707,7 +764,7 @@ elseif locale == 'deDE' then
     L["Tooltip information"] = "Tooltipinformation"
     L["Track new items"] = "Neue Gegenstände beobachten"
     L["Track new items in each bag, displaying a glowing aura over them and putting them in a special section. \"New\" status can be reset by clicking on the small \"N\" button at top left of bags."] = "Beobachtete Gegenstände in jeder Tasche mit einer glühenden Aura versehen und in eine spezielle Abteilung verschieben. Der \"New\" Status kann durch klicken auf den kleinen \"N\" Knopf oben links bei den Tachen zurückgesetzt werden."
-    L["Uncheck this to disable LanceBags."] = "Abwählen, um Adibags zu deaktivieren."
+    L["Uncheck this to disable DragonBags."] = "Abwählen, um Adibags zu deaktivieren."
     L["Unlock anchor"] = "Anker aufschliessen"
     L["Use this section to define any item-section association."] = "Benutze diesen Bereich, um eine beliebige Gegenstand-Sektionen-Zuweisung zu definieren"
     L["Use this to adjust the bag scale."] = "Skalierung der Taschen anpassen"
@@ -728,7 +785,7 @@ elseif locale == 'ruRU' then
     L["Add a dropdown menu to bags that allow to hide the sections."] = "Добавить выпадающее меню для сумок, в котором можно настроить отображение секций."
     L["Add association"] = "Добавить объединение"
     L["Add more information in tooltips related to items in your bags."] = "Добавить Дополнительную информацию во всплывающих подсказках, касающихся предметов, в вашей сумке"
-    L["LanceBags Anchor"] = "LanceBags Якорь"
+    L["DragonBags Anchor"] = "DragonBags Якорь"
     L["Adjust the maximum height of the bags, relative to screen size."] = "Регулировка максимальной высоты сумок, относительно размеру экрана."
     L["Adjust the maximum number of items per row."] = "регулировка максимально количества предметов в ряду."
     L["AH category"] = "Категория аукциона"
@@ -900,7 +957,7 @@ elseif locale == 'ruRU' then
     L["Tooltip information"] = "Информация подсказки"
     L["Track new items"] = "Следить за новыми предметами"
     L["Track new items in each bag, displaying a glowing aura over them and putting them in a special section. \"New\" status can be reset by clicking on the small \"N\" button at top left of bags."] = "Отслеживать новые предметы в каждой сумке, подсвечивать их и помещать в отдельную секцию. Статус \"Новое\" может быть сброшен кликом по небольшой кнопке \"N\" находящейся, в верхней левой стороне окна сумок."
-    L["Uncheck this to disable LanceBags."] = "Снимите галочку штобы выключить LanceBags."
+    L["Uncheck this to disable DragonBags."] = "Снимите галочку штобы выключить DragonBags."
     L["Reset bag position"] = "Сброс позиции сумки"
     L["Unlock Anchor"] = "Разблокировать якорь"
     L["Manual Filtering"] = "Ручная фильтрация"
@@ -922,7 +979,7 @@ elseif locale == 'ruRU' then
     L["Alt-Left-Click"] = "Alt-Левый клик"
     L["to toggle the anchor."] = "переключить якорь."
     L["to open bag menu."] = "открыть меню сумки."
-    L["to open LanceBags options."] = "открыть настройки LanceBags."
+    L["to open DragonBags options."] = "открыть настройки DragonBags."
     L["to toggle anchor mode."] = "переключить режим якоря."
     L["to move bag container."] = "переместить контейнер сумки."
     L["mode."] = "режим."
@@ -1049,7 +1106,7 @@ elseif locale == 'zhTW' then
     L["Add a dropdown menu to bags that allow to hide the sections."] = "增加下拉式選單來隱藏區塊"
     L["Add association"] = "新增關聯"
     L["Add more information in tooltips related to items in your bags."] = "顯示物品的額外資訊提示"
-    L["LanceBags Anchor"] = "LanceBags 錨點"
+    L["DragonBags Anchor"] = "DragonBags 錨點"
     L["Adjust the maximum height of the bags, relative to screen size."] = "調整背包最大高度，相對於螢幕尺寸"
     L["Adjust the maximum number of items per row."] = "設定每行最多物品數目"
     L["AH category"] = "拍賣場類別"
@@ -1215,7 +1272,7 @@ elseif locale == 'zhTW' then
     L["Toggle and configure plugins."] = "切換和配置插件。"
     L["Tooltip information"] = "提示資訊"
     L["Track new items"] = "追蹤新物品"
-    L["Uncheck this to disable LanceBags."] = "不選此停用LanceBags。"
+    L["Uncheck this to disable DragonBags."] = "不選此停用DragonBags。"
     L["Unlock anchor"] = "解鎖錨點"
     L["Use this to adjust the bag scale."] = "調整包包大小"
     L["Use this to adjust the quality-based border opacity. 100% means fully opaque."] = "調整品質邊框透明度 100%=完全不透明"
@@ -1233,7 +1290,7 @@ elseif locale == 'zhCN' then
     L["Add a dropdown menu to bags that allow to hide the sections."] = "给背包添加下拉菜单, 允许隐藏分组."
     L["Add association"] = "添加过滤"
     L["Add more information in tooltips related to items in your bags."] = "显示物品的额外提示信息"
-    L["LanceBags Anchor"] = "LanceBags 锚点"
+    L["DragonBags Anchor"] = "DragonBags 锚点"
     L["Adjust the maximum height of the bags, relative to screen size."] = "调整背包最大高度 (相对于屏幕)"
     L["Adjust the maximum number of items per row."] = "调整每行物品显示最大数量."
     L["AH category"] = "拍卖类"
@@ -1425,7 +1482,7 @@ elseif locale == 'zhCN' then
     L["Tooltip information"] = "提示信息"
     L["Track new items"] = "追踪新物品"
     L["Track new items in each bag, displaying a glowing aura over them and putting them in a special section. \"New\" status can be reset by clicking on the small \"N\" button at top left of bags."] = "追踪背包中的新物品, 新物品在[新物品]区将高亮显示, 可以点击右上[N]按钮将其重置."
-    L["Uncheck this to disable LanceBags."] = "反选禁用 LanceBags"
+    L["Uncheck this to disable DragonBags."] = "反选禁用 DragonBags"
     L["Unlock anchor"] = "解锁锚点"
     L["Use this section to define any item-section association."] = "使用此分组定义任意物品分组过滤"
     L["Use this to adjust the bag scale."] = "背包缩放"
@@ -1444,7 +1501,7 @@ elseif locale == 'koKR' then
     L["Add a dropdown menu to bags that allow to hide the sections."] = "항목을 숨길 수 있도록 허용하는 가방에 드롭다운 메뉴를 추가합니다. "
     L["Add association"] = "연계체 추가"
     L["Add more information in tooltips related to items in your bags."] = "가방안의 아이템과 관련된 툴팁에 더 많은 정보를 추가합니다."
-    L["LanceBags Anchor"] = "LanceBags 앵커"
+    L["DragonBags Anchor"] = "DragonBags 앵커"
     L["Adjust the maximum height of the bags, relative to screen size."] = "화면 크기를 고려해, 가방의 최대 높이를 조절합니다."
     L["Adjust the maximum number of items per row."] = "열당 아이템의 최대 갯수를 조절합니다."
     L["AH category"] = "경매장 분류"
@@ -1636,7 +1693,7 @@ elseif locale == 'koKR' then
     L["Tooltip information"] = "툴팁 정보"
     L["Track new items"] = "새 아이템 추적"
     L["Track new items in each bag, displaying a glowing aura over them and putting them in a special section. \"New\" status can be reset by clicking on the small \"N\" button at top left of bags."] = "각 가방에 있는 새 아이템을 추적해, 그 위에 광이 나는 오라로 표시하고 별도의 항목에 집어 넣을 것입니다. \"새 아이템\" 상태는 가방 상단 우측의 작은 \"N\" 버튼을 클릭하는 것으로 초기화할 수 있습니다, "
-    L["Uncheck this to disable LanceBags."] = "LanceBags를 비활성화하려면 이것을 체크 해제 하십시요."
+    L["Uncheck this to disable DragonBags."] = "DragonBags를 비활성화하려면 이것을 체크 해제 하십시요."
     L["Unlock anchor"] = "앵커의 잠금 해제"
     L["Use this section to define any item-section association."] = "특정 아이템 항목의 연계성을 재정의하기 위해서 이 항목을 사용합니다."
     L["Use this to adjust the bag scale."] = "가방 비율을 조절하려면 이것을 사용하세요."
@@ -1655,7 +1712,7 @@ elseif locale == 'ptBR' then
     L["Add a dropdown menu to bags that allow to hide the sections."] = "Adicione um menu retrátil nas bolsas que permitem esconder as seções"
     L["Add association"] = "Adicionar associação"
     L["Add more information in tooltips related to items in your bags."] = "Adicionar mais informação nas janelas de saque relacionadas aos itens em suas bolsas"
-    L["LanceBags Anchor"] = "Âncora do LanceBags"
+    L["DragonBags Anchor"] = "Âncora do DragonBags"
     L["Adjust the maximum height of the bags, relative to screen size."] = "Ajusta a altura máxima das bolsas, relativo a altura da tela"
     L["Adjust the maximum number of items per row."] = "Ajusta o número máximo de itens por linha"
     L["AH category"] = "Categoria da casa de leilões"
@@ -1848,7 +1905,7 @@ elseif locale == 'ptBR' then
     L["Tooltip information"] = "Dicas Informações"
     L["Track new items"] = "Rastreia itens novos"
     L["Track new items in each bag, displaying a glowing aura over them and putting them in a special section. \"New\" status can be reset by clicking on the small \"N\" button at top left of bags."] = "Rastreia itens novos em cada bolsa, mostrando uma aura brilhante sobre eles e colocando-os em uma seção especial. Status \"Novo\" pode ser apagado clicando no pequeno botão \"N\" no topo esquerdo de suas bolsas"
-    L["Uncheck this to disable LanceBags."] = "Desmarque para desabilitar LanceBags"
+    L["Uncheck this to disable DragonBags."] = "Desmarque para desabilitar DragonBags"
     L["Unlock anchor"] = "Destrava âncora"
     L["Use this section to define any item-section association."] = "Use esta seção para definir qualquer associação seção-item"
     L["Use this to adjust the bag scale."] = "Use para ajustar a escala da bolsa"

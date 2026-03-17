@@ -1,7 +1,7 @@
-LanceBags Project Notes (readme.txt)
+DragonBags Project Notes (readme.txt)
 ===================================
 
-This document tracks the changes we have added to LanceBags (AdiBags fork for 3.3.5)  
+This document tracks the changes we have added to DragonBags (AdiBags fork for 3.3.5)  
 and important notes about how to extend it safely.
 
 ------------------------------------------------------------
@@ -77,14 +77,14 @@ Notes:
 - Cleaner UI, fewer buttons.
 - Dynamic text + tooltip avoids confusion.
 - Chat prints confirm state changes for debugging:
-    |cFF33FF99LanceBags:|r Switched to CATEGORY view
-    |cFF33FF99LanceBags:|r Switched to BAG view
+    |cFF33FF99DragonBags:|r Switched to CATEGORY view
+    |cFF33FF99DragonBags:|r Switched to BAG view
 
 ------------------------------------------------------------
 Step 4.1: Rewire Backpack Button
 ------------------------------------------------------------
 File: widgets/ContainerFrame.lua
-Change: Backpack button now opens the LanceBags config panel instead of toggling Bag view.
+Change: Backpack button now opens the DragonBags config panel instead of toggling Bag view.
 
 Implementation:
 - Old:
@@ -94,7 +94,7 @@ Implementation:
         addon:OpenOptions()
     end)
 - Updated tooltip text to:
-    LanceBags Options
+    DragonBags Options
     Click to open the configuration menu.
 
 Notes:
@@ -163,7 +163,7 @@ This was a major architectural change, moving from a simple UI toggle to a data-
 This change unified the user experience between the bank and backpack.
 
 Step 7: Add Custom Sorting for "One Bag" View
-File(s): widgets/Section.lua, Options.lua, LanceBags.lua
+File(s): widgets/Section.lua, Options.lua, DragonBags.lua
 Change: Created a new, configurable sorting order specifically for the "One Bag" view, making it independent from the "Category" view's sorting rules.
 
 Implementation:
@@ -172,7 +172,7 @@ A new "One Bag View Sorting" dropdown menu was added to the options panel in Opt
 
 The existing "Sorting order" option was repurposed to only affect the "Category" view.
 
-This required creating two new database settings, categorySortingOrder and oneBagSortingOrder, and updating the DEFAULT_SETTINGS in LanceBags.lua.
+This required creating two new database settings, categorySortingOrder and oneBagSortingOrder, and updating the DEFAULT_SETTINGS in DragonBags.lua.
 
 The CompareButtons() function in Section.lua was enhanced to read the oneBagSortingOrder setting when the "onebag" view is active, applying rules such as "empty slots first" followed by quality and item level.
 
@@ -207,12 +207,12 @@ This is a significant quality-of-life improvement that automates a tedious task.
 The feature relies entirely on standard, safe Blizzard API functions.
 
 Step 9: Add Dynamic Gold Summary Tooltip
-File(s): LanceBags.lua, modules/MoneyFrame.lua
+File(s): DragonBags.lua, modules/MoneyFrame.lua
 Change: Added a detailed, dynamic tooltip to the money display. The tooltip shows the current character's gold, the total vendor value of all junk in the bags, and the last saved gold totals of other characters on the same realm.
 
 Implementation:
 
-Data Collection: A new function, UpdateCharacterGold(), was added to LanceBags.lua. It saves the current character's name, class, and gold to a realm-wide table within the LanceBagsDB SavedVariables. This function is triggered by the PLAYER_LOGIN and PLAYER_MONEY events to keep the data current. The database DEFAULT_SETTINGS were updated to support this new realm profile.
+Data Collection: A new function, UpdateCharacterGold(), was added to DragonBags.lua. It saves the current character's name, class, and gold to a realm-wide table within the DragonBagsDB SavedVariables. This function is triggered by the PLAYER_LOGIN and PLAYER_MONEY events to keep the data current. The database DEFAULT_SETTINGS were updated to support this new realm profile.
 
 Display: The logic was implemented entirely within MoneyFrame.lua for better encapsulation and to resolve complex frame layering issues.
 
@@ -226,7 +226,7 @@ Reading the current character's gold.
 
 Scanning all bags to calculate the total junk value.
 
-Reading the LanceBagsDB.realm.characters table to list other characters' saved gold, complete with class coloring.
+Reading the DragonBagsDB.realm.characters table to list other characters' saved gold, complete with class coloring.
 
 Notes:
 

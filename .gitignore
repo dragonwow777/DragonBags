@@ -1,0 +1,12 @@
+# Claude Code internal files
+.claude/
+
+# Backup / scratch files
+*- Copy.lua
+*.bak
+*.tmp
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini

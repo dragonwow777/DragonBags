@@ -1,80 +1,64 @@
 --[[
-LanceBags - Alt Inventory Viewer Module
+DragonBags - AltViewer module (retired UI, utility functions kept)
+
+The ALT button and popup viewer have been replaced by the character dropdown that
+floats above the Backpack frame (see modules/Bank.lua).  This module is kept
+registered in addon options so existing saved settings don't error, but all UI
+creation code has been removed.
+
+The two realm-character utility functions are kept here because they are shared
+across the codebase.
 --]]
 
 local addonName, addon = ...
-local L = addon.L
+local L = addon.L or setmetatable({}, { __index = function(t,k) return k end })
 
---<GLOBALS
+------------------------------------------------------------
+-- Blizzard API locals
+------------------------------------------------------------
 local _G = _G
-local CreateFrame = _G.CreateFrame
-local UIParent = _G.UIParent
---GLOBALS>
+local GetRealmName = _G.GetRealmName
+local UnitName     = _G.UnitName
 
--- Register "AltViewer" as a new module that can be enabled/disabled.
-local mod = addon:NewModule('AltViewer', 'AceEvent-3.0')
-mod.uiName = L['Alt Inventory']
-mod.uiDesc = L['Adds a frame to view the inventory and gold of your other characters.']
+------------------------------------------------------------
+-- Module setup
+------------------------------------------------------------
+local mod = addon:NewModule("AltViewer", "AceEvent-3.0", "AceTimer-3.0")
+mod.uiName = L["Alt Inventory"]
 
+------------------------------------------------------------
+-- Shared realm-character utilities
+-- (used by Bank.lua's character dropdown)
+------------------------------------------------------------
 
--- This function runs when the module is enabled in the options.
-function mod:OnEnable()
-	-- This hooks our OnBagFrameCreated function to run whenever a bag is created.
-	addon:HookBagFrameCreation(self, 'OnBagFrameCreated')
-
-	-- If the bag frame already exists, we need to run our creation function manually.
-	for _, bag in addon:IterateBags() do
-		if bag:HasFrame() then
-			self:OnBagFrameCreated(bag)
-		end
-	end
-	addon:Debug("AltViewer enabled.")
+function mod.GetRealmCharacters()
+    local list, realm = {}, GetRealmName()
+    local me = UnitName("player")
+    local chars = (addon.db and addon.db.global and addon.db.global.characters) or {}
+    for key, data in _G.pairs(chars) do
+        local name, r = key:match("^(.-) %- (.+)$")
+        if r == realm and name and name ~= me then
+            _G.table.insert(list, { key = key, name = name, class = data.class })
+        end
+    end
+    _G.table.sort(list, function(a, b) return a.name < b.name end)
+    return list
 end
 
--- This function runs when the module is disabled.
-function mod:OnDisable()
-	-- Code to remove the "Alts" button will go here.
-	if self.button then
-		self.button:Hide()
-	end
-	addon:Debug("AltViewer disabled.")
+-- Returns the key of the first saved character on this realm (any character,
+-- including the logged-in player).  Used as a fallback when no alt is selected.
+function mod.FirstCharOnRealmKey()
+    local realm = GetRealmName()
+    local chars = (addon.db and addon.db.global and addon.db.global.characters) or {}
+    for key, _ in _G.pairs(chars) do
+        local _, r = key:match("^(.-) %- (.+)$")
+        if r == realm then return key end
+    end
 end
 
--- ## NEW ## This function creates and adds our button to the bag frame.
-function mod:OnBagFrameCreated(bag)
-	-- We only want to add this button to the main backpack, not the bank.
-	if bag.bagName ~= "Backpack" then return end
-	
-	-- Get the main frame of the bag
-	local frame = bag:GetFrame()
-	
-	-- Create the button
-	local button = CreateFrame("Button", addonName.."AltViewerButton", frame)
-	button:SetSize(20, 20)
-	
-	-- Set the button's icon
-	button:SetNormalTexture("Interface\\FriendsFrame\\PlusManz-Button")
-	button:SetPushedTexture("Interface\\FriendsFrame\\PlusManz-Button-Down")
-	button:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight")
-	
-	-- Position the button in the top-right header
-	frame:AddHeaderWidget(button, "RIGHT", -45, 20, 0)
-	
-	-- Add a tooltip
-	addon.SetupTooltip(button, L["Alt Inventory"], L["Click to view the inventory of your other characters."])
-	
-	-- Set the click action
-	button:SetScript("OnClick", function()
-		self:ToggleViewer()
-	end)
-	
-	-- Save a reference to the button so we can hide it later
-	self.button = button
-end
+------------------------------------------------------------
+-- Module lifecycle (no-ops — UI retired)
+------------------------------------------------------------
 
-
--- This will be the main function to show/hide our new viewer window.
-function mod:ToggleViewer()
-	addon:Debug("ToggleViewer called!")
-	-- In the next step, we will build the window that this function will open.
-end
+function mod:OnEnable()  end
+function mod:OnDisable() end

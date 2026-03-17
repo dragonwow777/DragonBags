@@ -1,5 +1,5 @@
 --[[
-LanceBags - Adirelle's bag addon.
+DragonBags - Adirelle's bag addon.
 Copyright 2010-2011 Adirelle (adirelle@tagada-team.net)
 All rights reserved.
 --]]
@@ -267,7 +267,7 @@ end
 function bagButtonProto:OnShow()
 	self:RegisterEvent("BAG_UPDATE")
 	self:RegisterEvent("ITEM_LOCK_CHANGED")
-	self:RegisterMessage("LanceBags_GlobalLockChanged", "Update")
+	self:RegisterMessage("DragonBags_GlobalLockChanged", "Update")
 	self:Update()
 end
 
@@ -392,13 +392,13 @@ end
 
 local function Panel_OnShow(self)
 	PlaySound(self.openSound)
-	addon:SendMessage('LanceBags_FiltersChanged', true)
+	addon:SendMessage('DragonBags_FiltersChanged', true)
 end
 
 local function Panel_OnHide(self)
 	PlaySound(self.closeSound)
-	addon:SendMessage('LanceBags_FiltersChanged', true)
-	addon:SendMessage('LanceBags_BagSwapPanelClosed', true)
+	addon:SendMessage('DragonBags_FiltersChanged', true)
+	addon:SendMessage('DragonBags_BagSwapPanelClosed', true)
 end
 
 local function Panel_UpdateSkin(self)
@@ -459,7 +459,7 @@ function addon:CreateBagSlotPanel(container, name, bags, isBank)
 	self:SetWidth(x + BAG_INSET)
 	self:SetHeight(BAG_INSET + TOP_PADDING + ITEM_SIZE)
 
-	LibStub('AceEvent-3.0').RegisterMessage(self:GetName(), 'LanceBags_ConfigChanged', Panel_ConfigChanged, self)
+	LibStub('AceEvent-3.0').RegisterMessage(self:GetName(), 'DragonBags_ConfigChanged', Panel_ConfigChanged, self)
 	Panel_UpdateSkin(self)
 
 	return self

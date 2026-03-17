@@ -1,5 +1,5 @@
 --[[
-LanceBags - Adirelle's bag addon.
+DragonBags - Adirelle's bag addon.
 Copyright 2010-2012 Adirelle (adirelle@gmail.com)
 All rights reserved.
 --]]
@@ -18,8 +18,8 @@ mod.uiName = L['Bank Switcher']
 mod.uiDesc = L['Move items from and to back by right-clicking on section headers.']
 
 function mod:OnEnable()
-    self:RegisterMessage('LanceBags_InteractingWindowChanged')
-    self:LanceBags_InteractingWindowChanged('OnEnable', addon:GetInteractingWindow())
+    self:RegisterMessage('DragonBags_InteractingWindowChanged')
+    self:DragonBags_InteractingWindowChanged('OnEnable', addon:GetInteractingWindow())
 end
 
 function mod:OnDisable()
@@ -46,7 +46,7 @@ function mod:OnClickSectionHeader(_, header, button)
     end
 end
 
-function mod:LanceBags_InteractingWindowChanged(_, new, old)
+function mod:DragonBags_InteractingWindowChanged(_, new, old)
     if new == "BANKFRAME" then
         addon.RegisterSectionHeaderScript(self, 'OnEnter', 'OnEnterSectionHeader')
         addon.RegisterSectionHeaderScript(self, 'OnLeave', 'OnLeaveSectionHeader')

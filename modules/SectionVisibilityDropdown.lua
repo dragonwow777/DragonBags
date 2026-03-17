@@ -1,5 +1,5 @@
 --[[
-LanceBags - Adirelle's bag addon.
+DragonBags - Adirelle's bag addon.
 Copyright 2010-2011 Adirelle (adirelle@tagada-team.net)
 All rights reserved.
 --]]
@@ -64,7 +64,7 @@ local function CollapseDropDownMenu_ToggleSection(button, key, container)
 		section:SetCollapsed(not section:IsCollapsed())
 	else
 		addon.db.char.collapsedSections[key] = not addon.db.char.collapsedSections[key]
-		mod:SendMessage('LanceBags_LayoutChanged')
+		mod:SendMessage('DragonBags_LayoutChanged')
 	end
 end
 
