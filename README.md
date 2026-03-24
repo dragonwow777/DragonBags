@@ -48,7 +48,7 @@
 ## Changelog
 <details> <summary> Click to see the full Changelog </summary>
 
-* [cite start]**March 23, 2026** Added alt inventory and bank view 
+
 * [cite_start]**June 4, 2023:** Added Experimental Masque support. [cite: 37]
 * [cite_start]**June 3, 2023 (#8):** Fixed conflict with Immersion addon. [cite: 38]
 * **June 3, 2023 (#7):**
