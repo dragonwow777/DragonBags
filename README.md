@@ -10,17 +10,15 @@
    **[Download ZIP](https://github.com/Sattva-108/LanceBags/archive/refs/heads/main.zip)**
 
 2. Extract the downloaded `.zip` file. You’ll get a folder named:  
-   **`LanceBags-main`**
+   **`DragonBags-main`**
 
-3. Move the `LanceBags-main` folder into your WoW AddOns directory:  
+3. Move the `DragonBags-main` folder into your WoW AddOns directory:  
    `World of Warcraft\Interface\AddOns\`
 
 4. Rename the folder to exactly:  
-   **`LanceBags`**
+   **`DragonBags`**
 
 ✅ Done! The addon should now appear in your in-game addon list.
-
-- _**(Optional)**_ - Download supported extra-modules for LanceBags - [LanceBags-WoTLK-3.3.5-Mods](https://github.com/Sattva-108/LanceBags-WoTLK-3.3.5-Mods)
 
 
 ## Usage
