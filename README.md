@@ -48,6 +48,7 @@
 ## Changelog
 <details> <summary> Click to see the full Changelog </summary>
 
+* [cite start]**March 23, 2026** Added alt inventory and bank view 
 * [cite_start]**June 4, 2023:** Added Experimental Masque support. [cite: 37]
 * [cite_start]**June 3, 2023 (#8):** Fixed conflict with Immersion addon. [cite: 38]
 * **June 3, 2023 (#7):**
@@ -71,6 +72,10 @@ The following are notes from the original author, Adirelle, regarding the design
 
 **Things that likely will not be implemented:**
 
+One of the purposes of taking on this project was to implement some of the features on this list...
+
+Added Alts and banks!
+
 * [cite_start]**Anything else than the existing "all-in-one" views:** The addon was built and optimized around this concept. [cite: 10, 11]
 * [cite_start]**Anything that requires scanning item tooltips:** This is CPU-intensive and would raise the complexity of the addon significantly. [cite: 12, 13] [cite_start]This includes detecting bind status, known/unknown recipes, or class restrictions. [cite: 14, 15]
 * [cite_start]**Guild Bank:** To avoid messing up a guild's manual organization, guild bank support will not be implemented. [cite: 16, 17, 18, 19]
@@ -81,5 +86,5 @@ The following are notes from the original author, Adirelle, regarding the design
 </details>
 
 ## Credit
-- Credit to **Adirelle** for creating the original AdiBags/LanceBags.
+- Credit to **Adirelle** for creating the original AdiBags.
 - This project is a backport and modification of code from [LanceBags](https://github.com/AdiAddons/LanceBags).
