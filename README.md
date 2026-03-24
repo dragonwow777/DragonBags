@@ -7,7 +7,7 @@
 ## 📦 Download & Installation
 
 1. Click the green `Code` button at the top of this page, then select  
-   **[Download ZIP](https://github.com/Sattva-108/LanceBags/archive/refs/heads/main.zip)**
+   **https://github.com/dragonwow777/DragonBags.git**
 
 2. Extract the downloaded `.zip` file. You’ll get a folder named:  
    **`DragonBags-main`**
