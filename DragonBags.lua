@@ -149,6 +149,7 @@ local DEFAULT_SETTINGS = {
 		scale = 0.8, rowWidth = { ['*'] = 9 }, maxHeight = 0.60, clickMode = 1,
 		showAnchorHighlight = false, showAnchorTooltip = true, laxOrdering = 1,
 		qualityHighlight = true, qualityOpacity = 1.0, dimJunk = true, questIndicator = true, showBagType = true,
+		junkMode = "button", autoRepair = true,
 		filters = { ['*'] = true }, filterPriorities = {}, categorySortingOrder = 'default', oneBagSortingOrder = 'quality',
 		modules = { ['*'] = true },
 		virtualStacks = { ['*'] = false, freeSpace = true, notWhenTrading = 1 },

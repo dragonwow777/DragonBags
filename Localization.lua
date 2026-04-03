@@ -220,6 +220,21 @@ L["Junk category"] = true
 L["Low quality items"] = true
 L["Put items of poor quality or labeled as junk in the \"Junk\" section."] = true
 
+-- modules/JunkSell.lua
+L["Auto-repair at vendor"] = true
+L["Automatically repair all items when visiting a vendor that can repair."] = true
+L["Auto-sell on vendor"] = true
+L["Repaired all items for:"] = true
+L["Click to sell all junk (grey) items."] = true
+L["JUNK Sell Button"] = true
+L["Displays the JUNK button for selling grey items."] = true
+L["Junk selling mode"] = true
+L["Nothing"] = true
+L["Sell Junk"] = true
+L["Sell Junk button"] = true
+L["Sold junk for:"] = true
+L["Total Junk Value:"] = true
+
 -- modules/MoneyFrame.lua
 L["Display character money at bottom right of the backpack."] = true
 L["Money"] = true
