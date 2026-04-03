@@ -1,5 +1,5 @@
-# LanceBags-WoTLK-3.3.5
-**LanceBags** backport with improved UI and functions for 3.3.5 WoTLK client.
+# DragonBags-WoTLK-3.3.5
+**DragonBags** backport with improved UI and functions for 3.3.5 WoTLK client.
 
 ![wow_CNgtiMLTXH](https://user-images.githubusercontent.com/74269253/229909788-3782f7b8-a995-4095-b997-37bf895675b6.png)
 
@@ -7,20 +7,18 @@
 ## 📦 Download & Installation
 
 1. Click the green `Code` button at the top of this page, then select  
-   **[Download ZIP](https://github.com/Sattva-108/LanceBags/archive/refs/heads/main.zip)**
+   **https://github.com/dragonwow777/DragonBags.git**
 
 2. Extract the downloaded `.zip` file. You’ll get a folder named:  
-   **`LanceBags-main`**
+   **`DragonBags-main`**
 
-3. Move the `LanceBags-main` folder into your WoW AddOns directory:  
+3. Move the `DragonBags-main` folder into your WoW AddOns directory:  
    `World of Warcraft\Interface\AddOns\`
 
 4. Rename the folder to exactly:  
-   **`LanceBags`**
+   **`DragonBags`**
 
 ✅ Done! The addon should now appear in your in-game addon list.
-
-- _**(Optional)**_ - Download supported extra-modules for LanceBags - [LanceBags-WoTLK-3.3.5-Mods](https://github.com/Sattva-108/LanceBags-WoTLK-3.3.5-Mods)
 
 
 ## Usage
@@ -50,6 +48,7 @@
 ## Changelog
 <details> <summary> Click to see the full Changelog </summary>
 
+
 * [cite_start]**June 4, 2023:** Added Experimental Masque support. [cite: 37]
 * [cite_start]**June 3, 2023 (#8):** Fixed conflict with Immersion addon. [cite: 38]
 * **June 3, 2023 (#7):**
@@ -73,6 +72,10 @@ The following are notes from the original author, Adirelle, regarding the design
 
 **Things that likely will not be implemented:**
 
+One of the purposes of taking on this project was to implement some of the features on this list...
+
+Added Alts and banks!
+
 * [cite_start]**Anything else than the existing "all-in-one" views:** The addon was built and optimized around this concept. [cite: 10, 11]
 * [cite_start]**Anything that requires scanning item tooltips:** This is CPU-intensive and would raise the complexity of the addon significantly. [cite: 12, 13] [cite_start]This includes detecting bind status, known/unknown recipes, or class restrictions. [cite: 14, 15]
 * [cite_start]**Guild Bank:** To avoid messing up a guild's manual organization, guild bank support will not be implemented. [cite: 16, 17, 18, 19]
@@ -83,5 +86,5 @@ The following are notes from the original author, Adirelle, regarding the design
 </details>
 
 ## Credit
-- Credit to **Adirelle** for creating the original AdiBags/LanceBags.
+- Credit to **Adirelle** for creating the original AdiBags.
 - This project is a backport and modification of code from [LanceBags](https://github.com/AdiAddons/LanceBags).
