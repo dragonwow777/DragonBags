@@ -199,6 +199,10 @@ function mod:OnBagFrameCreated(bag)
 
     self:UpdateJunkButtonLayout()
     self:UpdateJunkButtonState()
+    -- Show or hide based on the current mode now that the button exists.
+    -- ApplyMode() in OnEnable() only runs before the frame is created;
+    -- this call covers the case where the frame is created after OnEnable().
+    self:ApplyMode()
 end
 
 function mod:GetOptions()
