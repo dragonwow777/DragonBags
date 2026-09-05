@@ -221,6 +221,106 @@ local function UpdateFilterOrder()
 end
 
 --------------------------------------------------------------------------------
+-- Account character bridge (mod-dragoncore's DragonBridge, "DBOT" addon-message
+-- protocol - formerly the standalone mod-multibot-bridge module using "MBOT";
+-- prefix renamed when it was merged in, wire format unchanged)
+--
+-- The Data Management panel uses this to ask the server which characters
+-- still actually exist on the account, so it can flag saved records that
+-- belong to deleted characters. If the server doesn't have the bridge mod
+-- installed, the request just times out and the panel falls back to plain
+-- manual selection (addon._dbLiveNames stays nil).
+--------------------------------------------------------------------------------
+
+local DB_MBOT = "DBOT"
+if _G.RegisterAddonMessagePrefix then _G.RegisterAddonMessagePrefix(DB_MBOT) end
+
+local DB_acSeq = 0
+local DB_acPending = {}
+
+local function DB_BridgeSend(msg)
+	if (_G.GetNumRaidMembers and _G.GetNumRaidMembers() or 0) > 0 then
+		_G.SendAddonMessage(DB_MBOT, msg, "RAID")
+	elseif (_G.GetNumPartyMembers and _G.GetNumPartyMembers() or 0) > 0 then
+		_G.SendAddonMessage(DB_MBOT, msg, "PARTY")
+	else
+		_G.SendAddonMessage(DB_MBOT, msg, "WHISPER", _G.UnitName("player"))
+	end
+end
+
+local function DB_UrlDecode(s)
+	return (s:gsub("%%(%x%x)", function(h) return _G.string.char(_G.tonumber(h, 16)) end))
+end
+
+local function DB_Split(s)
+	local t, i = {}, 1
+	while i <= #s do
+		local j = s:find("~", i, true)
+		if j then t[#t+1] = s:sub(i, j-1); i = j+1 else t[#t+1] = s:sub(i); break end
+	end
+	return t
+end
+
+local DB_bridgeFrame = _G.CreateFrame("Frame")
+DB_bridgeFrame:RegisterEvent("CHAT_MSG_ADDON")
+DB_bridgeFrame:SetScript("OnEvent", function(self, event, prefix, msg)
+	if prefix ~= DB_MBOT then return end
+	local tilde   = msg:find("~", 1, true)
+	local opcode  = tilde and msg:sub(1, tilde - 1) or msg
+	local payload = tilde and msg:sub(tilde + 1) or ""
+	if opcode == "ACCOUNT_CHARS_ITEM" then
+		local f  = DB_Split(payload)
+		local st = DB_acPending[f[1] or ""]
+		if st then
+			local name = DB_UrlDecode(f[2] or "")
+			if name ~= "" then st.names[name:upper()] = true end
+		end
+	elseif opcode == "ACCOUNT_CHARS_END" then
+		local token = payload:match("^([^~]*)") or ""
+		local st = DB_acPending[token]
+		if st and not st.done then
+			st.done = true
+			DB_acPending[token] = nil
+			st.cb(true, st.names)
+		end
+	end
+end)
+
+-- Fires cb(bridgeFound, namesSet). bridgeFound is false if nothing answered
+-- within the timeout (bridge mod not installed / not responding).
+local function DB_RequestAccountChars(cb)
+	DB_acSeq = DB_acSeq + 1
+	local token = "dbac" .. DB_acSeq
+	local st = { names = {}, done = false, cb = cb }
+	DB_acPending[token] = st
+	DB_BridgeSend("GET~ACCOUNT_CHARS~" .. token)
+	LibCompat.After(3, function()
+		if not st.done then
+			st.done = true
+			DB_acPending[token] = nil
+			cb(false, nil)
+		end
+	end)
+end
+
+-- Runs the account-character scan automatically, shortly after login, so the
+-- Data Management panel already has fresh "not on account" flags by the time
+-- the player opens it. Silent either way (found or timed out) - no chat spam.
+local DB_autoScanFrame = _G.CreateFrame("Frame")
+DB_autoScanFrame:RegisterEvent("PLAYER_LOGIN")
+DB_autoScanFrame:SetScript("OnEvent", function(self, event)
+	self:UnregisterEvent(event)
+	LibCompat.After(3, function()
+		DB_RequestAccountChars(function(found, names)
+			if found then
+				addon._dbLiveNames = names
+				_G.pcall(function() LibStub('AceConfigRegistry-3.0'):NotifyChange(addonName) end)
+			end
+		end)
+	end)
+end)
+
+--------------------------------------------------------------------------------
 -- Core options
 --------------------------------------------------------------------------------
 
@@ -654,24 +754,23 @@ function addon:GetOptions()
                             local charArgs = {}
                             local count = 10
                             local currentRealm = _G.GetRealmName()
+                            local myName = _G.UnitName("player")
                             local allChars = {}
 
-                            -- DEEP SCAN: Pull names from Main, Global, and Finance tables
-                            if DragonBagsDB and DragonBagsDB.realm and DragonBagsDB.realm.characters then
-                                for k, v in pairs(DragonBagsDB.realm.characters) do
-                                    if k:find("- " .. currentRealm) then allChars[k] = v.lastUpdate or 0 end
-                                end
-                            end
-                            if addon.db and addon.db.sv and addon.db.sv.realm then
-                                for rName, rData in pairs(addon.db.sv.realm) do
-                                    if rName == currentRealm and rData.characters then
-                                        for k in pairs(rData.characters) do allChars[k] = allChars[k] or 0 end
+                            -- The addon's actual data store: addon.db.global.characters
+                            -- (this is what populates the bag/bank tooltip character counts).
+                            if addon.db and addon.db.global and addon.db.global.characters then
+                                for k, v in pairs(addon.db.global.characters) do
+                                    local _, realm = k:match("^(.-) %- (.+)$")
+                                    if realm == currentRealm then
+                                        allChars[k] = v.lastUpdate or allChars[k] or 0
                                     end
                                 end
                             end
                             if DragonBagsFinanceDB then
                                 for k, v in pairs(DragonBagsFinanceDB) do
-                                    if k:find("- " .. currentRealm) then
+                                    local _, realm = k:match("^(.-) %- (.+)$")
+                                    if realm == currentRealm then
                                         local fLog = v.transaction_log
                                         local ts = (fLog and fLog[#fLog] and fLog[#fLog].ts) or 0
                                         allChars[k] = _G.math.max(allChars[k] or 0, ts)
@@ -691,18 +790,30 @@ function addon:GetOptions()
 
                                 -- Name Button (Left Column)
                                 charArgs[charKey:gsub("%s", "") .. "Btn"] = {
-                                    name = nameOnly,
+                                    name = function()
+                                        -- The logged-in character is obviously still on the account
+                                        -- even if the bridge's roster snapshot doesn't include them.
+                                        if nameOnly ~= myName and addon._dbLiveNames and not addon._dbLiveNames[nameOnly:upper()] then
+                                            return "|cffff5555" .. nameOnly .. " (" .. L["not on account"] .. ")|r"
+                                        end
+                                        return nameOnly
+                                    end,
                                     type = 'execute',
                                     width = "normal", -- Fixed width for alignment
                                     confirm = true,
                                     confirmText = _G.string.format(L["Are you sure? This will delete all records for %s."], charKey),
                                     func = function()
-                                        if DragonBagsDB.realm and DragonBagsDB.realm.characters then DragonBagsDB.realm.characters[charKey] = nil end
-                                        if DragonBagsFinanceDB then DragonBagsFinanceDB[charKey] = nil end
-                                        if addon.db.sv and addon.db.sv.realm and addon.db.sv.realm[currentRealm] then
-                                            addon.db.sv.realm[currentRealm].characters[charKey] = nil
+                                        if addon.db and addon.db.global and addon.db.global.characters then
+                                            addon.db.global.characters[charKey] = nil
                                         end
+                                        if DragonBagsFinanceDB then DragonBagsFinanceDB[charKey] = nil end
+                                        -- Remove this character's rows from the live args table so it
+                                        -- disappears from the panel immediately, without needing to
+                                        -- close and reopen the options window.
+                                        charArgs[charKey:gsub("%s", "") .. "Btn"] = nil
+                                        charArgs[charKey:gsub("%s", "") .. "Date"] = nil
                                         _G.print("|cff33ff99DragonBags:|r " .. L["Purged records for "] .. charKey)
+                                        LibStub('AceConfigRegistry-3.0'):NotifyChange(addonName)
                                     end,
                                     order = count,
                                 }
